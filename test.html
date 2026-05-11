@@ -144,7 +144,7 @@
     <script src="questions.js"></script>
     <script>
         let currentIndex = 0;
-        const answers = new Array(questions.length).fill(3); 
+        let answers = new Array(questions.length).fill(3); 
 
         const questionNumber = document.getElementById('questionNumber');
         const questionText = document.getElementById('questionText');
@@ -152,6 +152,37 @@
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const progressFill = document.getElementById('progressFill');
+
+        // ========== 本地存储功能 ==========
+        function saveProgress() {
+            const progress = {
+                answers: answers,
+                currentIndex: currentIndex,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('relationship-lab-progress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('relationship-lab-progress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                return progress;
+            }
+            return null;
+        }
+
+        // 页面加载时自动恢复进度
+        const savedProgress = loadProgress();
+        if (savedProgress) {
+            const shouldRestore = confirm('检测到上次未完成的测试，是否从中断处继续？');
+            if (shouldRestore) {
+                answers = savedProgress.answers;
+                currentIndex = savedProgress.currentIndex;
+            } else {
+                localStorage.removeItem('relationship-lab-progress');
+            }
+        }
 
         function renderQuestion() {
             const q = questions[currentIndex];
@@ -163,24 +194,33 @@
             nextBtn.textContent = currentIndex === questions.length - 1 ? '查看结果 →' : '下一题 →';
         }
 
+        // 滑动选择时立即保存
         answerSlider.addEventListener('input', function() {
             answers[currentIndex] = parseInt(this.value);
+            saveProgress();
         });
 
+        // 上一题
         prevBtn.addEventListener('click', function() {
             if (currentIndex > 0) {
                 currentIndex--;
                 renderQuestion();
+                saveProgress();
             }
         });
 
+        // 下一题
         nextBtn.addEventListener('click', function() {
             answers[currentIndex] = parseInt(answerSlider.value);
+            saveProgress();
             
             if (currentIndex < questions.length - 1) {
                 currentIndex++;
                 renderQuestion();
             } else {
+                // 计算得分前清除临时进度
+                localStorage.removeItem('relationship-lab-progress');
+                
                 let dim1Score = 0;
                 let dim2Score = 0;
                 let dim3Score = 0;
@@ -195,11 +235,20 @@
                     else if (q.dimension === 3) dim3Score += score;
                 });
 
+                const resultData = {
+                    dim1: dim1Score,
+                    dim2: dim2Score,
+                    dim3: dim3Score,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('relationship-lab-result', JSON.stringify(resultData));
+
                 const encoded = btoa(`${dim1Score},${dim2Score},${dim3Score}`);
                 window.location.href = `result.html?scores=${encoded}`;
             }
         });
 
+        // 初始渲染
         renderQuestion();
     </script>
 </body>
