@@ -81,7 +81,7 @@ var partnerData = getPartnerData();
 
 if (!partnerData) {
     try {
-        var savedPartner = localStorage.getItem('partner-lab-result');
+        var savedPartner = localStorage.getItem('couple-partner-data');
         if (savedPartner) {
             var pData = JSON.parse(savedPartner);
             if (pData.personality) {
@@ -226,6 +226,7 @@ if (!scores) {
     });
 
     function showPartnerReport() {
+        localStorage.setItem('couple-partner-data', JSON.stringify(partnerData));
         document.getElementById('partnerModule').style.display = 'block';
         document.getElementById('partnerInfo').innerHTML = '<strong>TA的画像：' + partnerData.personality + '</strong><br>TA的得分：沉默解读 ' + partnerData.dim1 + '/50 · 需求表达 ' + partnerData.dim2 + '/50 · 爱意感知 ' + partnerData.dim3 + '/50 · 冲突修复 ' + partnerData.dim4 + '/50';
         var gaps = [
