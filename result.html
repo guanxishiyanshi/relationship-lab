@@ -149,7 +149,7 @@ if (!scores) {
 
     const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
     const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
-    const resultUrl = window.location.href.split('?')[0].replace('result.html','test.html') + `?partner=${shareEncoded}`;
+    const resultUrl = `https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=${shareEncoded}`;
     new QRCode(document.getElementById("qrcode"),{text:resultUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
 
     document.getElementById('shareBtn').addEventListener('click',function(){
