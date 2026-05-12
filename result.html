@@ -142,25 +142,40 @@ if (!scores) {
     window.addEventListener('resize',()=>myChart.resize());
 
     const conclusion=generateConclusion(scores,d1Level,d2Level,d3Level,personality);
-    document.getElementById('coreProblem').textContent=conclusion.problem;
-    document.getElementById('coreStrength').textContent=conclusion.strength;
-    document.getElementById('actionGuide').textContent=conclusion.action;
+document.getElementById('coreProblem').textContent=conclusion.problem;
+document.getElementById('coreStrength').textContent=conclusion.strength;
+document.getElementById('actionGuide').textContent=conclusion.action;
 
-    const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
-    const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
-    const resultUrl = `https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=${shareEncoded}`;    document.getElementById('shareBtn').addEventListener('click',function(){
-    const btn=this; btn.textContent='正在生成...'; btn.disabled=true;
-    html2canvas(document.querySelector('.container'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(canvas=>{
-        const link=document.createElement('a'); link.download='我的情感出厂设置.png'; link.href=canvas.toDataURL('image/png'); link.click();
-        btn.textContent='保存我的结果'; btn.disabled=false;
-    }).catch(()=>{btn.textContent='生成失败，请重试'; btn.disabled=false;});
+const shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3;
+const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
+const resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=' + shareEncoded;
+const qrUrl = window.location.href.split('?')[0] + '?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3);
+new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
+
+document.getElementById('shareBtn').addEventListener('click', function(){
+    const btn = this;
+    btn.textContent = '正在生成...';
+    btn.disabled = true;
+    html2canvas(document.querySelector('.container'), {backgroundColor: '#0a1628', scale: 2, useCORS: true}).then(function(canvas) {
+        const link = document.createElement('a');
+        link.download = '我的情感出厂设置.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '保存我的结果';
+        btn.disabled = false;
+    }).catch(function() {
+        btn.textContent = '生成失败，请重试';
+        btn.disabled = false;
+    });
 });
 
-document.getElementById('sharePartnerBtn').addEventListener('click',function(){
-    navigator.clipboard.writeText(resultUrl).then(()=>{
-        this.textContent='已复制！发给她吧';
-        setTimeout(()=>{this.textContent='复制链接发给她 →';},2000);
-    }).catch(()=>{prompt('复制以下链接发给你的她：',resultUrl);});
+document.getElementById('sharePartnerBtn').addEventListener('click', function(){
+    navigator.clipboard.writeText(resultUrl).then(function() {
+        this.textContent = '已复制！发给她吧';
+        setTimeout(function() { this.textContent = '复制链接发给她 →'; }, 2000);
+    }).catch(function() {
+        prompt('复制以下链接发给你的她：', resultUrl);
+    });
 });
 
     if(partnerData){
