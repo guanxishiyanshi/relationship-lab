@@ -215,6 +215,78 @@ if (partnerData) {
             prompt('复制以下链接发给你的他：', resultUrl);
         });
     });
+// ========== 关键题深度分析 ==========
+var deepAnalysisHTML = '';
+var answers = JSON.parse(localStorage.getItem('partner-lab-progress'));
+if (answers && answers.answers) {
+    var userAnswers = answers.answers;
+    
+    // 第1题：自我归罪
+    var q1 = userAnswers[0];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#e05a8a;">🤐 第1题 · 安静下来，你第一反应是什么</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q1 >= 4) {
+        deepAnalysisHTML += '两个人之间突然安静下来，你脑子里第一个冒出来的念头是：是不是我又做错什么了。这个反应可能已经跟了你很久了——不是他做了什么，而是你自动把"安静"翻译成了"我有问题"。长期的自我归罪会让你在关系中很累，因为你一直在为对方的情绪负责。<br><br>下次突然安静的时候，试着先等几秒，问自己一句："除了我做错了什么，还有没有别的解释？"他可能只是累了，可能只是在想工作的事。不是所有安静都是暴风雨前的沉默。';
+    } else if (q1 >= 2) {
+        deepAnalysisHTML += '你有时会不自觉地把他的沉默理解成对你有意见，有时能冷静下来想到别的原因。这份觉察是好的——你能在事后意识到自己的反应可能过度了。现在可以试着把反思的时间提前一点，从"事后才想到"慢慢挪到"当下就能问自己"：他的沉默，可能有别的解释吗？';
+    } else {
+        deepAnalysisHTML += '两个人突然安静下来时，你不会立刻觉得是自己的错。你能相对客观地看待沉默——它可能只是安静，不是信号。这份冷静在亲密关系中很珍贵，它让你不太容易被对方的情绪波动带着走。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第11题：加密发送
+    var q11 = userAnswers[10];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#e05a8a;">📝 第11题 · 嘴上说没事，心里在等他听出来</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q11 >= 4) {
+        deepAnalysisHTML += '你说"没事"的时候，心里其实在喊"我有事"。你希望他不用你开口就能看穿你的情绪。但我们已经从男性量表里知道了一件事：大部分男性只能接收明码信号。你发出去的加密电报，他的接收器根本解不开。<br><br>下次你再说"没事"之前，可以试着换一个说法："其实有事，但我还没准备好怎么说。等我想好了，我会跟你讲。"这句不是逼自己摊牌，是给他一个信号：信号塔亮了，只是还没开始播。';
+    } else if (q11 >= 2) {
+        deepAnalysisHTML += '你有时候会说"没事"然后等他自己发现，有时候会直接告诉他你怎么了。你正在从加密发送向明码切换——这个过程需要一些安全感和信心。下次想说"没事"的时候，多给他一点线索：一句"我今天心情不太好"就足够让他知道入口在哪里。';
+    } else {
+        deepAnalysisHTML += '你比较习惯直接表达自己的需求。你不会说"没事"然后等对方猜，而是会告诉他你怎么了、你需要什么。这份清晰度在亲密关系中很宝贵，它让沟通变得更简单，也让你更容易被对方理解。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第20题：表层抱怨与深层需求
+    var q20 = userAnswers[19];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#e05a8a;">🗣️ 第20题 · 发牢骚的背后，真正想说的是什么</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q20 >= 4) {
+        deepAnalysisHTML += '当你开始为一件小事发牢骚，其实你心里有另一件更重的事想说。可能是因为那件事太大、太敏感、太不确定说出来他能不能接住，所以你挑了一件小事先开个头，试探一下。<br><br>下次你发现自己开了一个小话题但心里真正想说的其实是另一件事时，试着在牢骚结束后，深呼吸，加一句："其实我在意的是……"他会更容易触达你的核心诉求。';
+    } else if (q20 >= 2) {
+        deepAnalysisHTML += '你偶尔会用发牢骚来测试对方的反应，但大多数时候你能直接说清楚自己在意什么。你正在从"试探"走向"直接"，这个过程可能需要一点勇气，但你已经在路上了。';
+    } else {
+        deepAnalysisHTML += '你能比较清晰地把自己的真实需求表达出来，不会用发牢骚来给情绪穿上保护罩。这份能力让你在关系中更精准地让对方触达你的核心需求，而不是在门外兜圈。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第30题：原生家庭
+    var q30 = userAnswers[29];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#e05a8a;">🏠 第30题 · 小时候，爱在你家是怎么被表达的</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q30 >= 4) {
+        deepAnalysisHTML += '这道题让你停下来想了一会儿。小时候在你家，爱可能不是通过言语表达的——可能是有人煮好饭、可能是一起干活但不说闲话、可能是考了好成绩之后很短暂的一次肯定。那些表达方式和你现在期待的，可能不一样。<br><br>如果现在的伴侣也继承了那个无声的传统——用行动表达爱，而你一直在等他说一句暖心的话，那你可能不是错过了他在乎你，而是他的表达方式还停留在上一代。你们可以一起创造一种新的表达方式，而不是重复童年的模式。';
+    } else if (q30 >= 2) {
+        deepAnalysisHTML += '你偶尔会在这道题里回忆起小时候的画面，那种表达方式可能和你现在期待的有所不同。你在尝试理解童年的影响，也在尝试在现在的关系里创造新的频道。';
+    } else {
+        deepAnalysisHTML += '你对"被爱"的早期记忆和现在的期待之间，可能没有太大的断层。或者你已经完成了对它的整合——你看到了过去的模式，也找到了属于自己的表达方式。这份稳定感让你在关系中更少被过去影响。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第39题：秒睡
+    var q39 = userAnswers[38];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#e05a8a;">😤 第39题 · 吵完架他秒睡，你一个人瞪天花板</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q39 >= 4) {
+        deepAnalysisHTML += '刚吵完架，他转身睡着了，你一个人躺着，把刚才说的话重放了好几遍，越想越难受。他的修复机制是生物性的——累了，困了，先睡。你的修复机制是对话——我们需要把这件事说清楚。<br><br>下次你们吵完架，如果他又秒睡了，不是他不在乎你，是他的默认恢复程序在运行。你可以试着在白天和他说一句："我知道你困了需要睡，但我也需要在我睡着前知道你听到了我。"这句话不是逼他改，是让他知道两个人在同一个事件里经历着不同的恢复时间。';
+    } else if (q39 >= 2) {
+        deepAnalysisHTML += '吵完架他秒睡的时候，你有时会很难受，有时也能自己消化。你正在探索一个平衡点：既不委屈自己的情绪，也不过度解读他的恢复方式。这种感觉很正常——很多人在练习中都会遇到。';
+    } else {
+        deepAnalysisHTML += '吵完架他秒睡时，你不太会被这件事困住。你有自己的恢复方式，或者他不太会用秒睡来处理冲突，或者你们已经找到了合适的修复节奏。这份能力让你在关系结束后更容易收住情绪。';
+    }
+    deepAnalysisHTML += '</div></div>';
+}
+
+// 把深度分析插入到行动指南后面
+var actionGuideCard = document.getElementById('actionGuide').parentElement;
+var deepDiv = document.createElement('div');
+deepDiv.innerHTML = deepAnalysisHTML;
+actionGuideCard.parentNode.insertBefore(deepDiv, actionGuideCard.nextSibling);
 
     if (partnerData) {
         var overlay = document.createElement('div');
