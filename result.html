@@ -5,284 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>你的情感出厂设置</title>
     <style>
-        body {
-            margin: 0; padding: 16px;
-            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 100%);
-            min-height: 100vh;
-            font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
-            color: #ffffff; box-sizing: border-box;
-        }
-        .container { max-width: 420px; margin: 0 auto; padding-bottom: 40px; }
-        .tag { display: inline-block; background: linear-gradient(135deg, #f0974a, #e05a2a); padding: 8px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
-        .main-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        .main-subtitle { font-size: 16px; color: rgba(255,255,255,0.6); margin-bottom: 32px; line-height: 1.5; }
-        .radar-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 20px; padding: 16px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
-        #radarChart { width: 100%; height: 320px; }
-        .dim-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1); }
-        .dim-card .dim-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-        .dim-card .dim-score { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
-        .dim-card .dim-desc { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.75); }
-        .bottom-btns { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
-        .btn { flex: 1; min-width: 120px; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn.primary { background: linear-gradient(135deg, #f0974a, #e05a2a); color: #fff; }
-        .btn.secondary { background: rgba(255,255,255,0.1); color: #fff; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .modal-box { background: #1a2a4a; border-radius: 20px; padding: 28px 24px; margin: 16px; max-width: 360px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .modal-box .modal-icon { font-size: 40px; margin-bottom: 12px; }
-        .modal-box .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-        .modal-box .modal-desc { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.6; }
-        .modal-btns { display: flex; flex-direction: column; gap: 10px; }
-        .modal-btn { padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .modal-btn.primary { background: linear-gradient(135deg, #f0974a, #e05a2a); color: #fff; }
-        .modal-btn.secondary { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
-        .modal-btn.text { background: transparent; color: rgba(255,255,255,0.4); font-size: 14px; }
+        body { margin:0; padding:16px; background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; box-sizing:border-box; }
+        .container { max-width:420px; margin:0 auto; padding-bottom:40px; }
+        .tag { display:inline-block; background:linear-gradient(135deg,#f0974a,#e05a2a); padding:8px 24px; border-radius:100px; font-size:14px; font-weight:600; margin-bottom:16px; }
+        .main-title { font-size:32px; font-weight:700; margin-bottom:8px; }
+        .main-subtitle { font-size:16px; color:rgba(255,255,255,0.6); margin-bottom:32px; line-height:1.5; }
+        .radar-box { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border-radius:20px; padding:16px; margin-bottom:24px; border:1px solid rgba(255,255,255,0.1); }
+        #radarChart { width:100%; height:320px; }
+        .dim-card { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
+        .dim-card .dim-name { font-size:16px; font-weight:600; margin-bottom:4px; }
+        .dim-card .dim-score { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:8px; }
+        .dim-card .dim-desc { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.75); }
+        .bottom-btns { display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
+        .btn { flex:1; min-width:120px; padding:14px; border-radius:12px; border:none; font-size:16px; font-weight:600; cursor:pointer; text-align:center; }
+        .btn.primary { background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; }
+        .btn.secondary { background:rgba(255,255,255,0.1); color:#fff; }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .modal-box { background:#1a2a4a; border-radius:20px; padding:28px 24px; margin:16px; max-width:360px; text-align:center; border:1px solid rgba(255,255,255,0.1); }
+        .modal-box .modal-icon { font-size:40px; margin-bottom:12px; }
+        .modal-box .modal-title { font-size:20px; font-weight:700; margin-bottom:8px; }
+        .modal-box .modal-desc { font-size:14px; color:rgba(255,255,255,0.6); margin-bottom:24px; line-height:1.6; }
+        .modal-btns { display:flex; flex-direction:column; gap:10px; }
+        .modal-btn { padding:14px; border-radius:12px; border:none; font-size:16px; font-weight:600; cursor:pointer; }
+        .modal-btn.primary { background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; }
+        .modal-btn.secondary { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); }
+        .modal-btn.text { background:transparent; color:rgba(255,255,255,0.4); font-size:14px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="tag" id="personalityTag">...</div>
-        <div class="main-title" id="personalityTitle">...</div>
-        <div class="main-subtitle" id="personalitySubtitle">...</div>
-
-        <div class="radar-box"><div id="radarChart"></div></div>
-
-        <div class="dim-card">
-            <div class="dim-name">维度一：自我情绪的识别与接纳</div>
-            <div class="dim-score" id="dim1Score">...</div>
-            <div class="dim-desc" id="dim1Desc">...</div>
-        </div>
-        <div class="dim-card">
-            <div class="dim-name">维度二：共情与情感回应的模式</div>
-            <div class="dim-score" id="dim2Score">...</div>
-            <div class="dim-desc" id="dim2Desc">...</div>
-        </div>
-        <div class="dim-card">
-            <div class="dim-name">维度三：爱的动机与内在驱动力</div>
-            <div class="dim-score" id="dim3Score">...</div>
-            <div class="dim-desc" id="dim3Desc">...</div>
-        </div>
-
-        <div class="dim-card" style="border:1px solid rgba(240,151,74,0.3);">
-            <div class="dim-name" style="color:#f0974a;">🔍 你的核心困局</div>
-            <div class="dim-desc" id="coreProblem" style="margin-top:8px;"></div>
-        </div>
-        <div class="dim-card">
-            <div class="dim-name" style="color:#f0974a;">💡 你的潜在优势</div>
-            <div class="dim-desc" id="coreStrength" style="margin-top:8px;"></div>
-        </div>
-        <div class="dim-card">
-            <div class="dim-name" style="color:#f0974a;">🚀 你的行动指南</div>
-            <div class="dim-desc" id="actionGuide" style="margin-top:8px;"></div>
-        </div>
-
-        <div id="partnerModule" style="display:none;">
-            <div class="dim-card" style="border:2px solid rgba(240,151,74,0.5);">
-                <div class="dim-name" style="color:#f0974a;">🔗 你们的关系信号断层</div>
-                <div class="dim-desc" id="partnerInfo" style="margin-top:8px;"></div>
-                <div class="dim-desc" id="gapScene" style="margin-top:12px;"></div>
-            </div>
-            <div class="dim-card">
-                <div class="dim-name" style="color:#f0974a;">👤 给你的一句话</div>
-                <div class="dim-desc" id="gapHisAdvice" style="margin-top:8px;"></div>
-            </div>
-            <div class="dim-card">
-                <div class="dim-name" style="color:#f0974a;">👤 给她的一句话</div>
-                <div class="dim-desc" id="gapHerAdvice" style="margin-top:8px;"></div>
-            </div>
-        </div>
-
-        <div class="dim-card" style="background:rgba(240,151,74,0.08);">
-            <div class="dim-name">📌 关于这份结果</div>
-            <div class="dim-desc" style="margin-top:8px;">这份报告照见的，是你当下的情感模式，不是对你这个人的评判。<br><br>模式可以被看见，也可以被改变。你今天愿意花时间了解自己，这本身就是一次重要的突破。</div>
-        </div>
-
-        <div class="bottom-btns">
-            <button class="btn secondary" onclick="window.location.href='test.html'">重新测试</button>
-            <button class="btn primary" id="shareBtn">保存我的结果</button>
-            <button class="btn primary" id="sharePartnerBtn" style="background:linear-gradient(135deg,#e05a8a,#c04a6a);">复制链接发给她 →</button>
-        </div>
+<div class="container">
+    <div class="tag" id="personalityTag">...</div>
+    <div class="main-title" id="personalityTitle">...</div>
+    <div class="main-subtitle" id="personalitySubtitle">...</div>
+    <div class="radar-box"><div id="radarChart"></div></div>
+    <div class="dim-card"><div class="dim-name">维度一：自我情绪的识别与接纳</div><div class="dim-score" id="dim1Score">...</div><div class="dim-desc" id="dim1Desc">...</div></div>
+    <div class="dim-card"><div class="dim-name">维度二：共情与情感回应的模式</div><div class="dim-score" id="dim2Score">...</div><div class="dim-desc" id="dim2Desc">...</div></div>
+    <div class="dim-card"><div class="dim-name">维度三：爱的动机与内在驱动力</div><div class="dim-score" id="dim3Score">...</div><div class="dim-desc" id="dim3Desc">...</div></div>
+    <div class="dim-card" style="border:1px solid rgba(240,151,74,0.3);"><div class="dim-name" style="color:#f0974a;">🔍 你的核心困局</div><div class="dim-desc" id="coreProblem" style="margin-top:8px;"></div></div>
+    <div class="dim-card"><div class="dim-name" style="color:#f0974a;">💡 你的潜在优势</div><div class="dim-desc" id="coreStrength" style="margin-top:8px;"></div></div>
+    <div class="dim-card"><div class="dim-name" style="color:#f0974a;">🚀 你的行动指南</div><div class="dim-desc" id="actionGuide" style="margin-top:8px;"></div></div>
+    <div id="partnerModule" style="display:none;">
+        <div class="dim-card" style="border:2px solid rgba(240,151,74,0.5);"><div class="dim-name" style="color:#f0974a;">🔗 你们的关系信号断层</div><div class="dim-desc" id="partnerInfo" style="margin-top:8px;"></div><div class="dim-desc" id="gapScene" style="margin-top:12px;"></div></div>
+        <div class="dim-card"><div class="dim-name" style="color:#f0974a;">👤 给你的一句话</div><div class="dim-desc" id="gapHisAdvice" style="margin-top:8px;"></div></div>
+        <div class="dim-card"><div class="dim-name" style="color:#f0974a;">👤 给她的一句话</div><div class="dim-desc" id="gapHerAdvice" style="margin-top:8px;"></div></div>
     </div>
-
-    <div style="position:fixed; top:80px; right:16px; z-index:999; background:#ffffff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
-        <div id="qrcode" style="display:inline-block; width:80px; height:80px;"></div>
-        <p style="font-size:10px; color:#666; margin:4px 0 0;">扫码看结果</p>
+    <div class="dim-card" style="background:rgba(240,151,74,0.08);"><div class="dim-name">📌 关于这份结果</div><div class="dim-desc" style="margin-top:8px;">这份报告照见的，是你当下的情感模式，不是对你这个人的评判。<br><br>模式可以被看见，也可以被改变。你今天愿意花时间了解自己，这本身就是一次重要的突破。</div></div>
+    <div class="bottom-btns">
+        <button class="btn secondary" onclick="window.location.href='test.html'">重新测试</button>
+        <button class="btn primary" id="shareBtn">保存我的结果</button>
+        <button class="btn primary" id="sharePartnerBtn" style="background:linear-gradient(135deg,#e05a8a,#c04a6a);">复制链接发给她 →</button>
     </div>
+</div>
+<div style="position:fixed; top:80px; right:16px; z-index:999; background:#fff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
+    <div id="qrcode" style="display:inline-block; width:80px; height:80px;"></div>
+    <p style="font-size:10px; color:#666; margin:4px 0 0;">扫码看结果</p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+function getPartnerData() {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('partner');
+    if (!encoded) return null;
+    try {
+        const decoded = decodeURIComponent(escape(atob(encoded)));
+        const parts = decoded.split('|');
+        if (parts.length === 5) { parts[0]=decodeURIComponent(parts[0]); return {personality:parts[0],dim1:parseInt(parts[1]),dim2:parseInt(parts[2]),dim3:parseInt(parts[3]),dim4:parseInt(parts[4])}; }
+    } catch(e) {}
+    return null;
+}
+const partnerData = getPartnerData();
 
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script>
-        function getPartnerData() {
-            const params = new URLSearchParams(window.location.search);
-            const encoded = params.get('partner');
-            if (!encoded) return null;
-            try {
-            const decoded = decodeURIComponent(escape(atob(encoded)));
-            const parts = decoded.split('|');
-            if (parts.length >= 4) parts[0] = decodeURIComponent(parts[0]);
-                if (parts.length === 5) {
-                    return { personality: parts[0], dim1: parseInt(parts[1]), dim2: parseInt(parts[2]), dim3: parseInt(parts[3]), dim4: parseInt(parts[4]) };
-                }
-            } catch (e) {}
-            return null;
-        }
-        const partnerData = getPartnerData();
+function getScores() {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('scores');
+    if (encoded) { try { const d=atob(encoded); const s=d.split(',').map(Number); if(s.length===3&&s.every(v=>!isNaN(v))) return {dim1:s[0],dim2:s[1],dim3:s[2]}; } catch(e){} }
+    try { const saved=localStorage.getItem('relationship-lab-result'); if(saved){ const data=JSON.parse(saved); if(data.dim1!==undefined) return {dim1:data.dim1,dim2:data.dim2,dim3:data.dim3}; } } catch(e) {}
+    return null;
+}
+function getLevel(score,type) { if(type===1){if(score>=28)return'高';if(score>=17)return'中';return'低';} else {if(score>=28)return'高';if(score>=17)return'中';return'低';} }
+function getPersonality(d1,d2,d3) {
+    const key=d1+'-'+d2+'-'+d3;
+    const map={'高-高-高':'全面冻结型','高-高-中':'全面冻结型','高-中-高':'全面冻结型','中-高-高':'全面冻结型','高-高-低':'孤独的付出者','高-中-低':'孤独的付出者','中-高-低':'孤独的付出者','高-低-高':'孤独的阅读者','高-低-中':'孤独的阅读者','高-低-低':'孤独的阅读者','低-高-高':'未启程的旅人','低-中-高':'未启程的旅人','低-高-低':'未启程的旅人','中-低-高':'责任型守护者','低-低-高':'责任型守护者','中-低-低':'责任型守护者','低-低-中':'双向通达型','低-低-低':'双向通达型','中-中-中':'矛盾探索者','中-中-高':'矛盾探索者','中-中-低':'矛盾探索者','中-高-中':'矛盾探索者','中-低-中':'矛盾探索者','高-中-中':'矛盾探索者','低-中-中':'矛盾探索者'};
+    return map[key]||'矛盾探索者';
+}
+const personalityTexts = {
+    '全面冻结型':{subtitle:'你习惯了一个人扛下所有，却在情感世界里活成了一座孤岛。',dim1Desc:'情绪对你来说，是一种需要被"处理掉"的麻烦。你从小学会了用做事来逃避感受，用"没什么"来回应关心。',dim2Desc:'你不是不在乎，是你的共情天线有些频道收不到信号。你习惯用"解决问题"来表达关心。',dim3Desc:'婚姻对你更像是一个人生必答题。你清楚自己的责任，但有没有问过自己：真的快乐吗？'},
+    '孤独的付出者':{subtitle:'你用尽全力去爱，却苦于对方感受不到。你的爱，被困在了"翻译"里。',dim1Desc:'你不擅长识别自己的情绪，也不太会安抚自己。',dim2Desc:'面对伴侣的情绪，你常常手足无措。你给出的关心，常常包裹在分析和建议里。',dim3Desc:'你内心有强烈的爱的渴望，你想成为一个好丈夫、好父亲。这份渴望是你最宝贵的资产。'},
+    '孤独的阅读者':{subtitle:'你能精准感知她的情绪，却把自己的心封锁起来。',dim1Desc:'你与自己的内心是断联的。你对自己的情绪要么视而不见，要么习惯性压抑。',dim2Desc:'你其实能敏锐地察觉到她的情绪变化。这是你天赋的共情能力。',dim3Desc:'对你来说，关系更像是一项需要完成的"任务"而非发自内心的渴望。'},
+    '未启程的旅人':{subtitle:'你拥有爱与被爱的能力，却似乎找不到出发的理由。',dim1Desc:'你能较好地识别自己的情绪，也懂得如何与自己相处。',dim2Desc:'你能感知她的情绪，也知道该怎么回应。',dim3Desc:'你似乎还站在关系的门外。请对自己温柔一点。'},
+    '责任型守护者':{subtitle:'你能把她照顾得很好，却忘了照顾自己。你的爱，像一份精确的KPI。',dim1Desc:'你能识别自己的情绪，也懂得如何回应伴侣。',dim2Desc:'你能接住她的情绪，给出恰当的回应。但你可能偶尔会想：我做这些，到底是因为爱，还是因为"应该"？',dim3Desc:'你经营关系的能力很强，但驱动力更多来自"责任"而非"渴望"。'},
+    '双向通达型':{subtitle:'你既懂自己，也懂别人。这是情感世界里最健康的状态。',dim1Desc:'你保留了与自己内心的连接。你能识别情绪并与之相处。',dim2Desc:'你能较好地识别并回应伴侣的情绪信号。',dim3Desc:'你的心，是自己点燃的，不是别人推着走的。'},
+    '矛盾探索者':{subtitle:'你不是不想，是不知道该怎么办。你正在努力的途中。',dim1Desc:'你偶尔能察觉到不对劲，但不知如何是好。',dim2Desc:'你开始意识到她的情绪是一个需要处理的东西，但你的工具很有限。',dim3Desc:'你内心还有渴望，但常常被现实和责任淹没。这份矛盾，本身就是一种清醒。'}
+};
+function generateConclusion(scores,d1Level,d2Level,d3Level,personality) {
+    let problem='',strength='',action='';
+    const maxDim=Math.max(scores.dim1/40,scores.dim2/35,scores.dim3/35);
+    if(scores.dim2/35===maxDim&&d2Level==='高') problem='你最大的困局在"共情回应"。你很努力地在爱，但关心常常包裹在分析和建议里。';
+    else if(scores.dim1/40===maxDim&&d1Level==='高') problem='你最大的困局在"自我情绪"。你已经习惯了把情绪压下去，用做事来逃避。';
+    else if(scores.dim3/35===maxDim&&d3Level==='高') problem='你最大的困局在"爱的动力"。你对婚姻的理解更像是在完成一个任务。';
+    else problem='你的困局不太极端，但这恰恰是最难描述的状态。你什么都有一点，什么都不确定。';
+    const minDim=Math.min(scores.dim1/40,scores.dim2/35,scores.dim3/35);
+    if(scores.dim2/35===minDim&&d2Level==='低') strength='你的共情能力不错。你能感知伴侣的情绪，也知道该怎么回应。';
+    else if(scores.dim1/40===minDim&&d1Level==='低') strength='你对自己的情绪有不错的觉察。这是很多男性缺失的能力。';
+    else if(scores.dim3/35===minDim&&d3Level==='低') strength='你爱一个人的动力，来自你自己内心。这很难得。';
+    else strength='你已经意识到了问题。你愿意做这份测试，愿意面对自己，这就是你最大的优势。';
+    const actionMap={'全面冻结型':'你不需要一下子把所有盲区都扫清。先从最轻的那个开始：每天睡前，用一句话记下当天的一个情绪。不用分析，不用解决，只是识别。','矛盾探索者':'下次和伴侣沟通时，试试把"我来解决"换成"我在听"，把"你应该"换成"你是不是觉得"。','孤独的付出者':'下次她情绪不好时，先别给建议，先说一句"听起来真的挺难的"。观察她的反应。','孤独的阅读者':'试着给自己一个安全的空间——可以是写日记，可以是找信得过的朋友聊一次。','未启程的旅人':'下次遇到让你心动的人，别用"我还没准备好"来逃避。害怕也可以往前走。','责任型守护者':'试着每周留出一个小时，做一件纯粹为自己做的事。','双向通达型':'你的状态很不错。下一步可以尝试更深度的关系经营。'};
+    action=actionMap[personality]||actionMap['矛盾探索者'];
+    return {problem,strength,action};
+}
 
-        function getScores() {
-            const params = new URLSearchParams(window.location.search);
-            const encoded = params.get('scores');
-            if (encoded) {
-                try {
-                    const decoded = atob(encoded);
-                    const scores = decoded.split(',').map(Number);
-                    if (scores.length === 3 && scores.every(s => !isNaN(s))) return { dim1: scores[0], dim2: scores[1], dim3: scores[2] };
-                } catch (e) {}
-            }
-            try {
-                const saved = localStorage.getItem('relationship-lab-result');
-                if (saved) { const data = JSON.parse(saved); if (data.dim1 !== undefined) return { dim1: data.dim1, dim2: data.dim2, dim3: data.dim3 }; }
-            } catch (e) {}
-            return null;
-        }
+const scores = getScores();
+if (!scores) {
+    document.querySelector('.container').innerHTML = '<h1>未找到测评数据</h1><p>请从首页重新开始测试。</p><button class="btn primary" onclick="window.location.href=\'index.html\'" style="padding:14px 32px; border-radius:12px; border:none; background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; font-size:16px; font-weight:600;">开始测试</button>';
+} else {
+    const d1Level=getLevel(scores.dim1,1), d2Level=getLevel(scores.dim2,2), d3Level=getLevel(scores.dim3,3);
+    const personality=getPersonality(d1Level,d2Level,d3Level);
+    const text=personalityTexts[personality];
+    document.getElementById('personalityTag').textContent=personality;
+    document.getElementById('personalityTitle').textContent='你是：'+personality;
+    document.getElementById('personalitySubtitle').textContent=text.subtitle;
+    document.getElementById('dim1Score').textContent='得分 '+scores.dim1+'/40 · '+(d1Level==='高'?'情感隔离模式':d1Level==='中'?'沉默挣扎模式':'自我觉察模式');
+    document.getElementById('dim1Desc').textContent=text.dim1Desc;
+    document.getElementById('dim2Score').textContent='得分 '+scores.dim2+'/35 · '+(d2Level==='高'?'信号接收困难模式':d2Level==='中'?'努力但笨拙模式':'共情能力在线模式');
+    document.getElementById('dim2Desc').textContent=text.dim2Desc;
+    document.getElementById('dim3Score').textContent='得分 '+scores.dim3+'/35 · '+(d3Level==='高'?'任务驱动型':d3Level==='中'?'矛盾犹豫型':'内在驱动型');
+    document.getElementById('dim3Desc').textContent=text.dim3Desc;
 
-        function getLevel(score, type) {
-            if (type === 1) { if (score >= 28) return '高'; if (score >= 17) return '中'; return '低'; }
-            else { if (score >= 28) return '高'; if (score >= 17) return '中'; return '低'; }
-        }
+    const d1S=scores.dim1, d2S=Math.round(scores.dim2*(40/35)), d3S=Math.round(scores.dim3*(40/35));
+    const chartDom=document.getElementById('radarChart');
+    const myChart=echarts.init(chartDom);
+    myChart.setOption({
+        radar:{center:['50%','50%'],radius:'70%',indicator:[{name:'自我情绪',max:40},{name:'共情回应',max:40},{name:'爱的动力',max:40}],axisName:{color:'rgba(255,255,255,0.7)',fontSize:13},splitArea:{areaStyle:{color:['rgba(240,151,74,0.05)','rgba(240,151,74,0.1)']}},splitLine:{lineStyle:{color:'rgba(255,255,255,0.15)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,0.2)'}}},
+        series:[{type:'radar',data:[{value:[d1S,d2S,d3S],name:'你'}],areaStyle:{color:'rgba(240,151,74,0.3)'},lineStyle:{color:'#f0974a',width:2},itemStyle:{color:'#f0974a'},symbol:'circle',symbolSize:6}]
+    });
+    window.addEventListener('resize',()=>myChart.resize());
 
-        function getPersonality(d1, d2, d3) {
-            const key = d1 + '-' + d2 + '-' + d3;
-            const map = {
-                '高-高-高':'全面冻结型','高-高-中':'全面冻结型','高-中-高':'全面冻结型','中-高-高':'全面冻结型',
-                '高-高-低':'孤独的付出者','高-中-低':'孤独的付出者','中-高-低':'孤独的付出者',
-                '高-低-高':'孤独的阅读者','高-低-中':'孤独的阅读者','高-低-低':'孤独的阅读者',
-                '低-高-高':'未启程的旅人','低-中-高':'未启程的旅人','低-高-低':'未启程的旅人',
-                '中-低-高':'责任型守护者','低-低-高':'责任型守护者','中-低-低':'责任型守护者',
-                '低-低-中':'双向通达型','低-低-低':'双向通达型',
-                '中-中-中':'矛盾探索者','中-中-高':'矛盾探索者','中-中-低':'矛盾探索者','中-高-中':'矛盾探索者','中-低-中':'矛盾探索者','高-中-中':'矛盾探索者','低-中-中':'矛盾探索者'
-            };
-            return map[key] || '矛盾探索者';
-        }
+    const conclusion=generateConclusion(scores,d1Level,d2Level,d3Level,personality);
+    document.getElementById('coreProblem').textContent=conclusion.problem;
+    document.getElementById('coreStrength').textContent=conclusion.strength;
+    document.getElementById('actionGuide').textContent=conclusion.action;
 
-        const personalityTexts = {
-            '全面冻结型': { subtitle: '你习惯了一个人扛下所有，却在情感世界里活成了一座孤岛。', dim1Desc: '情绪对你来说，是一种需要被"处理掉"的麻烦。你从小学会了用做事来逃避感受，用"没什么"来回应关心。', dim2Desc: '你不是不在乎，是你的共情天线有些频道收不到信号。你习惯用"解决问题"来表达关心。', dim3Desc: '婚姻对你更像是一个人生必答题。你清楚自己的责任，但有没有问过自己：真的快乐吗？' },
-            '孤独的付出者': { subtitle: '你用尽全力去爱，却苦于对方感受不到。你的爱，被困在了"翻译"里。', dim1Desc: '你不擅长识别自己的情绪，也不太会安抚自己。', dim2Desc: '面对伴侣的情绪，你常常手足无措。你给出的关心，常常包裹在分析和建议里。', dim3Desc: '你内心有强烈的爱的渴望，你想成为一个好丈夫、好父亲。这份渴望是你最宝贵的资产。' },
-            '孤独的阅读者': { subtitle: '你能精准感知她的情绪，却把自己的心封锁起来。', dim1Desc: '你与自己的内心是断联的。你对自己的情绪要么视而不见，要么习惯性压抑。', dim2Desc: '你其实能敏锐地察觉到她的情绪变化。这是你天赋的共情能力。', dim3Desc: '对你来说，关系更像是一项需要完成的"任务"而非发自内心的渴望。' },
-            '未启程的旅人': { subtitle: '你拥有爱与被爱的能力，却似乎找不到出发的理由。', dim1Desc: '你能较好地识别自己的情绪，也懂得如何与自己相处。', dim2Desc: '你能感知她的情绪，也知道该怎么回应。', dim3Desc: '你似乎还站在关系的门外。请对自己温柔一点。' },
-            '责任型守护者': { subtitle: '你能把她照顾得很好，却忘了照顾自己。你的爱，像一份精确的KPI。', dim1Desc: '你能识别自己的情绪，也懂得如何回应伴侣。', dim2Desc: '你能接住她的情绪，给出恰当的回应。但你可能偶尔会想：我做这些，到底是因为爱，还是因为"应该"？', dim3Desc: '你经营关系的能力很强，但驱动力更多来自"责任"而非"渴望"。' },
-            '双向通达型': { subtitle: '你既懂自己，也懂别人。这是情感世界里最健康的状态。', dim1Desc: '你保留了与自己内心的连接。你能识别情绪并与之相处。', dim2Desc: '你能较好地识别并回应伴侣的情绪信号。', dim3Desc: '你的心，是自己点燃的，不是别人推着走的。' },
-            '矛盾探索者': { subtitle: '你不是不想，是不知道该怎么办。你正在努力的途中。', dim1Desc: '你偶尔能察觉到不对劲，但不知如何是好。', dim2Desc: '你开始意识到她的情绪是一个需要处理的东西，但你的工具很有限。', dim3Desc: '你内心还有渴望，但常常被现实和责任淹没。这份矛盾，本身就是一种清醒。' }
-        };
+    const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
+    const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
+    const resultUrl = window.location.href.split('?')[0].replace('result.html','test.html') + `?partner=${shareEncoded}`;
+    new QRCode(document.getElementById("qrcode"),{text:resultUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
 
-        function generateConclusion(scores, d1Level, d2Level, d3Level, personality) {
-            let problem = '', strength = '', action = '';
-            const maxDim = Math.max(scores.dim1/40, scores.dim2/35, scores.dim3/35);
-            if (scores.dim2/35 === maxDim && d2Level === '高') problem = '你最大的困局在"共情回应"。你很努力地在爱，但关心常常包裹在分析和建议里。';
-            else if (scores.dim1/40 === maxDim && d1Level === '高') problem = '你最大的困局在"自我情绪"。你已经习惯了把情绪压下去，用做事来逃避。';
-            else if (scores.dim3/35 === maxDim && d3Level === '高') problem = '你最大的困局在"爱的动力"。你对婚姻的理解更像是在完成一个任务。';
-            else problem = '你的困局不太极端，但这恰恰是最难描述的状态。你什么都有一点，什么都不确定。';
-            const minDim = Math.min(scores.dim1/40, scores.dim2/35, scores.dim3/35);
-            if (scores.dim2/35 === minDim && d2Level === '低') strength = '你的共情能力不错。你能感知伴侣的情绪，也知道该怎么回应。';
-            else if (scores.dim1/40 === minDim && d1Level === '低') strength = '你对自己的情绪有不错的觉察。这是很多男性缺失的能力。';
-            else if (scores.dim3/35 === minDim && d3Level === '低') strength = '你爱一个人的动力，来自你自己内心。这很难得。';
-            else strength = '你已经意识到了问题。你愿意做这份测试，愿意面对自己，这就是你最大的优势。';
-            const actionMap = {
-                '全面冻结型':'你不需要一下子把所有盲区都扫清。先从最轻的那个开始：每天睡前，用一句话记下当天的一个情绪。不用分析，不用解决，只是识别。',
-                '矛盾探索者':'下次和伴侣沟通时，试试把"我来解决"换成"我在听"，把"你应该"换成"你是不是觉得"。',
-                '孤独的付出者':'下次她情绪不好时，先别给建议，先说一句"听起来真的挺难的"。观察她的反应。',
-                '孤独的阅读者':'试着给自己一个安全的空间——可以是写日记，可以是找信得过的朋友聊一次。',
-                '未启程的旅人':'下次遇到让你心动的人，别用"我还没准备好"来逃避。害怕也可以往前走。',
-                '责任型守护者':'试着每周留出一个小时，做一件纯粹为自己做的事。',
-                '双向通达型':'你的状态很不错。下一步可以尝试更深度的关系经营。'
-            };
-            action = actionMap[personality] || actionMap['矛盾探索者'];
-            return { problem, strength, action };
-        }
+    document.getElementById('shareBtn').addEventListener('click',function(){
+        const btn=this; btn.textContent='正在生成...'; btn.disabled=true;
+        html2canvas(document.querySelector('.container'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(canvas=>{
+            const link=document.createElement('a'); link.download='我的情感出厂设置.png'; link.href=canvas.toDataURL('image/png'); link.click();
+            btn.textContent='保存我的结果'; btn.disabled=false;
+        }).catch(()=>{btn.textContent='生成失败，请重试'; btn.disabled=false;});
+    });
 
-        const scores = getScores();
-        if (!scores) {
-            document.querySelector('.container').innerHTML = `<h1>未找到测评数据</h1><p>请从首页重新开始测试。</p><button class="btn primary" onclick="window.location.href='index.html'" style="padding:14px 32px; border-radius:12px; border:none; background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; font-size:16px; font-weight:600;">开始测试</button>`;
-        } else {
-            const d1Level = getLevel(scores.dim1, 1), d2Level = getLevel(scores.dim2, 2), d3Level = getLevel(scores.dim3, 3);
-            const personality = getPersonality(d1Level, d2Level, d3Level);
-            const text = personalityTexts[personality];
+    document.getElementById('sharePartnerBtn').addEventListener('click',function(){
+        navigator.clipboard.writeText(resultUrl).then(()=>{
+            this.textContent='已复制！发给她吧';
+            setTimeout(()=>{this.textContent='复制链接发给她 →';},2000);
+        }).catch(()=>{prompt('复制以下链接发给你的她：',resultUrl);});
+    });
 
-            document.getElementById('personalityTag').textContent = personality;
-            document.getElementById('personalityTitle').textContent = '你是：' + personality;
-            document.getElementById('personalitySubtitle').textContent = text.subtitle;
-
-            document.getElementById('dim1Score').textContent = `得分 ${scores.dim1}/40 · ${d1Level==='高'?'情感隔离模式':d1Level==='中'?'沉默挣扎模式':'自我觉察模式'}`;
-            document.getElementById('dim1Desc').textContent = text.dim1Desc;
-            document.getElementById('dim2Score').textContent = `得分 ${scores.dim2}/35 · ${d2Level==='高'?'信号接收困难模式':d2Level==='中'?'努力但笨拙模式':'共情能力在线模式'}`;
-            document.getElementById('dim2Desc').textContent = text.dim2Desc;
-            document.getElementById('dim3Score').textContent = `得分 ${scores.dim3}/35 · ${d3Level==='高'?'任务驱动型':d3Level==='中'?'矛盾犹豫型':'内在驱动型'}`;
-            document.getElementById('dim3Desc').textContent = text.dim3Desc;
-
-            const d1S = scores.dim1, d2S = Math.round(scores.dim2*(40/35)), d3S = Math.round(scores.dim3*(40/35));
-            const chartDom = document.getElementById('radarChart');
-            const myChart = echarts.init(chartDom);
-            myChart.setOption({
-                radar: { center:['50%','50%'], radius:'70%', indicator:[{name:'自我情绪',max:40},{name:'共情回应',max:40},{name:'爱的动力',max:40}], axisName:{color:'rgba(255,255,255,0.7)',fontSize:13}, splitArea:{areaStyle:{color:['rgba(240,151,74,0.05)','rgba(240,151,74,0.1)']}}, splitLine:{lineStyle:{color:'rgba(255,255,255,0.15)'}}, axisLine:{lineStyle:{color:'rgba(255,255,255,0.2)'}} },
-                series:[{type:'radar', data:[{value:[d1S,d2S,d3S],name:'你'}], areaStyle:{color:'rgba(240,151,74,0.3)'}, lineStyle:{color:'#f0974a',width:2}, itemStyle:{color:'#f0974a'}, symbol:'circle', symbolSize:6 }]
-            });
-            window.addEventListener('resize', () => myChart.resize());
-
-            const conclusion = generateConclusion(scores, d1Level, d2Level, d3Level, personality);
-            document.getElementById('coreProblem').textContent = conclusion.problem;
-            document.getElementById('coreStrength').textContent = conclusion.strength;
-            document.getElementById('actionGuide').textContent = conclusion.action;
-
-            const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
-            const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
-            const resultUrl = window.location.href.split('?')[0] + `?partner=${shareEncoded}`;
-            new QRCode(document.getElementById("qrcode"), { text: resultUrl, width:80, height:80, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });
-
-            document.getElementById('shareBtn').addEventListener('click', function(){
-                const btn = this; btn.textContent = '正在生成...'; btn.disabled = true;
-                html2canvas(document.querySelector('.container'), { backgroundColor:'#0a1628', scale:2, useCORS:true }).then(canvas => {
-                    const link = document.createElement('a'); link.download = '我的情感出厂设置.png'; link.href = canvas.toDataURL('image/png'); link.click();
-                    btn.textContent = '保存我的结果'; btn.disabled = false;
-                }).catch(() => { btn.textContent = '生成失败，请重试'; btn.disabled = false; });
-            });
-
-            document.getElementById('sharePartnerBtn').addEventListener('click', function(){
-                navigator.clipboard.writeText(resultUrl).then(() => {
-                    this.textContent = '已复制！发给她吧';
-                    setTimeout(() => { this.textContent = '复制链接发给她 →'; }, 2000);
-                }).catch(() => { prompt('复制以下链接发给你的她：', resultUrl); });
-            });
-
-            if (partnerData) {
-                const overlay = document.createElement('div');
-                overlay.className = 'modal-overlay'; overlay.id = 'partnerModal';
-                overlay.innerHTML = `<div class="modal-box"><div class="modal-icon">🔗</div><div class="modal-title">检测到TA的测评数据</div><div class="modal-desc">TA的画像是 <b>${partnerData.personality}</b><br><br>你们可以生成一份「关系信号断层报告」，看看彼此在哪个频道上错过了。<br>是否现在查看？</div><div class="modal-btns"><button class="modal-btn primary" id="btnViewReport">🔍 查看报告</button><button class="modal-btn secondary" id="btnSkipReport">📋 先看自己的</button><button class="modal-btn text" id="btnCloseModal">关闭</button></div></div>`;
-                document.body.appendChild(overlay);
-
-                document.getElementById('btnViewReport').addEventListener('click', function(){
-                    document.getElementById('partnerModule').style.display = 'block';
-                    document.getElementById('partnerInfo').innerHTML = `<strong>TA的画像：${partnerData.personality}</strong><br>TA的得分：沉默解读 ${partnerData.dim1}/50 · 需求表达 ${partnerData.dim2}/50 · 爱意感知 ${partnerData.dim3}/50 · 冲突修复 ${partnerData.dim4}/50`;
-                    const gaps = [
-                        { dim:'沉默解读', his:Math.round(scores.dim1*(50/40)), hers:partnerData.dim1, diff:Math.abs(Math.round(scores.dim1*(50/40))-partnerData.dim1), scene:'他沉默了' },
-                        { dim:'需求表达', his:Math.round(scores.dim2*(50/35)), hers:partnerData.dim2, diff:Math.abs(Math.round(scores.dim2*(50/35))-partnerData.dim2), scene:'她需要安慰' },
-                        { dim:'爱意通道', his:Math.round(scores.dim3*(50/35)), hers:partnerData.dim3, diff:Math.abs(Math.round(scores.dim3*(50/35))-partnerData.dim3), scene:'他用行动表达爱' }
-                    ];
-                    gaps.sort((a,b) => b.diff - a.diff);
-                    const maxGap = gaps[0];
-                    const sceneTexts = {
-                        '他沉默了': { gap:'你们最大的信号断层在"他沉默时"——你沉默是因为说不出来，她沉默是因为在等你开口。两个人都安静，却在不同的频道上。', his:'下次你脑子里一片空白时，别说"没什么"。试着说一句："我在想，但还没想好怎么说。"', her:'下次你沉默时，她如果也在等，你可以说："给我一点时间，我想好了会告诉你。"' },
-                        '她需要安慰': { gap:'你们最大的信号断层在"她需要安慰时"——你想帮她解决问题，她只想让你听她说。你拿错了工具，她收错了东西。', his:'下次她跟你倾诉时，先别给建议。说一句："听起来真的挺难的。"然后等她继续。', her:'下次她想倒苦水时，你可以问一句："你是想我帮忙出主意，还是想让我听着？"' },
-                        '爱意通道': { gap:'你们最大的信号断层在"爱意表达方式"上——你用行动说爱，她用言语感知爱。你搬了十块砖，只有一块落在她接收范围内。', his:'下次你为她做了一件事，试着加一句简单的话："我今天有点累，但还是想帮你把这个弄好。"', her:'下次你做完家务，她如果说谢谢，你可以回一句："这些是因为在乎你，你能感觉到吗？"' }
-                    };
-                    const scene = sceneTexts[maxGap.scene];
-                    document.getElementById('gapScene').innerHTML = `<strong>🔴 ${maxGap.scene}</strong>：${scene.gap}`;
-                    document.getElementById('gapHisAdvice').textContent = scene.his;
-                    document.getElementById('gapHerAdvice').textContent = scene.her;
-                    overlay.remove();
-                });
-                document.getElementById('btnSkipReport').addEventListener('click', () => overlay.remove());
-                document.getElementById('btnCloseModal').addEventListener('click', () => overlay.remove());
-            }
-        }
-    </script>
+    if(partnerData){
+        const overlay=document.createElement('div');
+        overlay.className='modal-overlay'; overlay.id='partnerModal';
+        overlay.innerHTML='<div class="modal-box"><div class="modal-icon">🔗</div><div class="modal-title">检测到TA的测评数据</div><div class="modal-desc">TA的画像是 <b>'+partnerData.personality+'</b><br><br>你们可以生成一份「关系信号断层报告」，看看彼此在哪个频道上错过了。<br>是否现在查看？</div><div class="modal-btns"><button class="modal-btn primary" id="btnViewReport">🔍 查看报告</button><button class="modal-btn secondary" id="btnSkipReport">📋 先看自己的</button><button class="modal-btn text" id="btnCloseModal">关闭</button></div></div>';
+        document.body.appendChild(overlay);
+        document.getElementById('btnViewReport').addEventListener('click',function(){
+            document.getElementById('partnerModule').style.display='block';
+            document.getElementById('partnerInfo').innerHTML='<strong>TA的画像：'+partnerData.personality+'</strong><br>TA的得分：沉默解读 '+partnerData.dim1+'/50 · 需求表达 '+partnerData.dim2+'/50 · 爱意感知 '+partnerData.dim3+'/50 · 冲突修复 '+partnerData.dim4+'/50';
+            const gaps=[{dim:'沉默解读',his:Math.round(scores.dim1*(50/40)),hers:partnerData.dim1,diff:Math.abs(Math.round(scores.dim1*(50/40))-partnerData.dim1),scene:'他沉默了'},{dim:'需求表达',his:Math.round(scores.dim2*(50/35)),hers:partnerData.dim2,diff:Math.abs(Math.round(scores.dim2*(50/35))-partnerData.dim2),scene:'她需要安慰'},{dim:'爱意通道',his:Math.round(scores.dim3*(50/35)),hers:partnerData.dim3,diff:Math.abs(Math.round(scores.dim3*(50/35))-partnerData.dim3),scene:'他用行动表达爱'}];
+            gaps.sort((a,b)=>b.diff-a.diff);
+            const maxGap=gaps[0];
+            const sceneTexts={'他沉默了':{gap:'你们最大的信号断层在"他沉默时"——你沉默是因为说不出来，她沉默是因为在等你开口。两个人都安静，却在不同的频道上。',his:'下次你脑子里一片空白时，别说"没什么"。试着说一句："我在想，但还没想好怎么说。"',her:'下次你沉默时，她如果也在等，你可以说："给我一点时间，我想好了会告诉你。"'},'她需要安慰':{gap:'你们最大的信号断层在"她需要安慰时"——你想帮她解决问题，她只想让你听她说。你拿错了工具，她收错了东西。',his:'下次她跟你倾诉时，先别给建议。说一句："听起来真的挺难的。"然后等她继续。',her:'下次她想倒苦水时，你可以问一句："你是想我帮忙出主意，还是想让我听着？"'},'爱意通道':{gap:'你们最大的信号断层在"爱意表达方式"上——你用行动说爱，她用言语感知爱。你搬了十块砖，只有一块落在她接收范围内。',his:'下次你为她做了一件事，试着加一句简单的话："我今天有点累，但还是想帮你把这个弄好。"',her:'下次你做完家务，她如果说谢谢，你可以回一句："这些是因为在乎你，你能感觉到吗？"'}};
+            const scene=sceneTexts[maxGap.scene];
+            document.getElementById('gapScene').innerHTML='<strong>🔴 '+maxGap.scene+'</strong>：'+scene.gap;
+            document.getElementById('gapHisAdvice').textContent=scene.his;
+            document.getElementById('gapHerAdvice').textContent=scene.her;
+            overlay.remove();
+        });
+        document.getElementById('btnSkipReport').addEventListener('click',()=>overlay.remove());
+        document.getElementById('btnCloseModal').addEventListener('click',()=>overlay.remove());
+    }
+}
+</script>
 </body>
 </html>
