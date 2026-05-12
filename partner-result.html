@@ -55,6 +55,7 @@
         <button class="btn secondary" onclick="window.location.href='partner-test.html'">重新测试</button>
         <button class="btn primary" id="shareBtn">保存我的结果</button>
         <button class="btn primary" id="sharePartnerBtn" style="background:linear-gradient(135deg,#f0974a,#e05a2a);">复制链接发给他 →</button>
+        <button class="btn secondary" id="reopenPartnerBtn" style="display:none;">🔗 查看双人报告</button>
     </div>
 </div>
 <div style="position:fixed; top:80px; right:16px; z-index:999; background:#fff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
@@ -66,148 +67,197 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 function getPartnerData() {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('partner');
+    var params = new URLSearchParams(window.location.search);
+    var encoded = params.get('partner');
     if (!encoded) return null;
     try {
-        const decoded = decodeURIComponent(escape(atob(encoded)));
-        const parts = decoded.split('|');
-        if (parts.length === 4) { parts[0]=decodeURIComponent(parts[0]); return {personality:parts[0],dim1:parseInt(parts[1]),dim2:parseInt(parts[2]),dim3:parseInt(parts[3])}; }
+        var decoded = decodeURIComponent(escape(atob(encoded)));
+        var parts = decoded.split('|');
+        if (parts.length === 4) {
+            parts[0] = decodeURIComponent(parts[0]);
+            return {personality: parts[0], dim1: parseInt(parts[1]), dim2: parseInt(parts[2]), dim3: parseInt(parts[3])};
+        }
     } catch(e) {}
     return null;
 }
-const partnerData = getPartnerData();
+var partnerData = getPartnerData();
 
 function getScores() {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('scores');
-    if (encoded) { try { const d=atob(encoded); const s=d.split(',').map(Number); if(s.length===4&&s.every(v=>!isNaN(v))) return {dim1:s[0],dim2:s[1],dim3:s[2],dim4:s[3]}; } catch(e){} }
-    try { const saved=localStorage.getItem('partner-lab-result'); if(saved){ const data=JSON.parse(saved); if(data.dim1!==undefined) return {dim1:data.dim1,dim2:data.dim2,dim3:data.dim3,dim4:data.dim4}; } } catch(e) {}
+    var params = new URLSearchParams(window.location.search);
+    var encoded = params.get('scores');
+    if (encoded) {
+        try {
+            var d = atob(encoded);
+            var s = d.split(',').map(Number);
+            if (s.length === 4 && s.every(function(v) { return !isNaN(v); })) {
+                return {dim1: s[0], dim2: s[1], dim3: s[2], dim4: s[3]};
+            }
+        } catch(e) {}
+    }
+    try {
+        var saved = localStorage.getItem('partner-lab-result');
+        if (saved) {
+            var data = JSON.parse(saved);
+            if (data.dim1 !== undefined) return {dim1: data.dim1, dim2: data.dim2, dim3: data.dim3, dim4: data.dim4};
+        }
+    } catch(e) {}
     return null;
 }
-function getLevel(score) { if(score>=38)return'高'; if(score>=25)return'中'; return'低'; }
+function getLevel(score) { if (score >= 38) return '高'; if (score >= 25) return '中'; return '低'; }
 function getPersonality(scores) {
-    const {dim1,dim2,dim3,dim4}=scores;
-    const r1=dim1/50, r2=dim2/50, r3=(50-dim3)/50, r4=dim4/50;
-    if(r1>0.7&&r2>0.6&&r4<0.5) return'疲惫的双面镜';
-    if(r2>0.7&&r1>0.6) return'等待的信号灯';
-    if(r1>0.8&&r3<0.4) return'焦虑的独行者';
-    if(r3<0.3&&r2>0.6) return'感知失调者';
-    if(r1>0.7) return'沉默的接收器';
-    if(r4>0.7) return'等待的信号灯';
-    if(r1<0.5&&r2<0.5&&r3<0.5&&r4<0.5) return'冷静的船锚';
-    return'冷静的船锚';
+    var dim1 = scores.dim1, dim2 = scores.dim2, dim3 = scores.dim3, dim4 = scores.dim4;
+    var r1 = dim1/50, r2 = dim2/50, r3 = (50-dim3)/50, r4 = dim4/50;
+    if (r1 > 0.7 && r2 > 0.6 && r4 < 0.5) return '疲惫的双面镜';
+    if (r2 > 0.7 && r1 > 0.6) return '等待的信号灯';
+    if (r1 > 0.8 && r3 < 0.4) return '焦虑的独行者';
+    if (r3 < 0.3 && r2 > 0.6) return '感知失调者';
+    if (r1 > 0.7) return '沉默的接收器';
+    if (r4 > 0.7) return '等待的信号灯';
+    if (r1 < 0.5 && r2 < 0.5 && r3 < 0.5 && r4 < 0.5) return '冷静的船锚';
+    return '冷静的船锚';
 }
-const personalityTexts = {
-    '沉默的接收器':{subtitle:'我不是不想说，我是不敢要。我怕一开口，连现在有的都会失去。',dim1Desc:'你对他的沉默高度敏感，常常自动解读为"他在生气"或"他不爱我了"。',dim2Desc:'你的需求常常加密发送。你嘴上说"没事"，心里在等他听出来"有事"。',dim3Desc:'你最期待的爱是言语和亲密接触。',dim4Desc:'你习惯在冲突后等待，等他先开口。'},
-    '感知失调者':{subtitle:'我知道你对我好，但我感受不到爱。',dim1Desc:'你对他的沉默和情绪变化不太敏感，或者已经习惯了。',dim2Desc:'你的需求表达比较直接，但方式上可能偏向抱怨或指责。',dim3Desc:'你的爱意接收器只有特定频道——言语肯定和深度陪伴。',dim4Desc:'你需要他说出来、做出来。你的修复方式是显性的、需要仪式的。'},
-    '焦虑的独行者':{subtitle:'我一个人什么都可以，但我好希望有个人能让我不用这么什么都可以。',dim1Desc:'你学会了不期待，因为期待落空的滋味太难受了。',dim2Desc:'你最不习惯的就是直接说"我需要你"。',dim3Desc:'你其实很渴望被照顾，但你不敢承认。',dim4Desc:'你修复关系的方式是"算了，我自己想通了再说"。'},
-    '等待的信号灯':{subtitle:'我可以陪你吃苦，但我需要你让我看见那个"我们"的未来。',dim1Desc:'你对他的犹豫和沉默特别敏感。',dim2Desc:'你表达需求时是试探性的，不敢一上来就摊牌。',dim3Desc:'你对亲密感和承诺的需求很明确。',dim4Desc:'你需要仪式化的修复——一个认真的道歉、一个明确的承诺、一个看得见的改变。'},
-    '疲惫的双面镜':{subtitle:'我替你说了所有你没说过的话，包括我的委屈。',dim1Desc:'你其实能理解他的沉默，但理解得多了，发现一直在替他解释。',dim2Desc:'你把两个人的沟通工作全做了。',dim3Desc:'你有识别多种爱意的能力，但用得太满了。',dim4Desc:'你在冲突中是那个先破冰的人，替两个人完成了修复。'},
-    '冷静的船锚':{subtitle:'我能接住情绪，也等得起修复。',dim1Desc:'你能理解他的沉默不是冷暴力。',dim2Desc:'你能直接表达自己的需求，不带攻击性。',dim3Desc:'你的爱意接收器是多通道的。',dim4Desc:'你对修复的节奏把握得很好。'}
+var personalityTexts = {
+    '沉默的接收器': {subtitle:'我不是不想说，我是不敢要。我怕一开口，连现在有的都会失去。', dim1Desc:'你对他的沉默高度敏感，常常自动解读为"他在生气"或"他不爱我了"。', dim2Desc:'你的需求常常加密发送。你嘴上说"没事"，心里在等他听出来"有事"。', dim3Desc:'你最期待的爱是言语和亲密接触。', dim4Desc:'你习惯在冲突后等待，等他先开口。'},
+    '感知失调者': {subtitle:'我知道你对我好，但我感受不到爱。', dim1Desc:'你对他的沉默和情绪变化不太敏感，或者已经习惯了。', dim2Desc:'你的需求表达比较直接，但方式上可能偏向抱怨或指责。', dim3Desc:'你的爱意接收器只有特定频道——言语肯定和深度陪伴。', dim4Desc:'你需要他说出来、做出来。你的修复方式是显性的、需要仪式的。'},
+    '焦虑的独行者': {subtitle:'我一个人什么都可以，但我好希望有个人能让我不用这么什么都可以。', dim1Desc:'你学会了不期待，因为期待落空的滋味太难受了。', dim2Desc:'你最不习惯的就是直接说"我需要你"。', dim3Desc:'你其实很渴望被照顾，但你不敢承认。', dim4Desc:'你修复关系的方式是"算了，我自己想通了再说"。'},
+    '等待的信号灯': {subtitle:'我可以陪你吃苦，但我需要你让我看见那个"我们"的未来。', dim1Desc:'你对他的犹豫和沉默特别敏感。', dim2Desc:'你表达需求时是试探性的，不敢一上来就摊牌。', dim3Desc:'你对亲密感和承诺的需求很明确。', dim4Desc:'你需要仪式化的修复——一个认真的道歉、一个明确的承诺、一个看得见的改变。'},
+    '疲惫的双面镜': {subtitle:'我替你说了所有你没说过的话，包括我的委屈。', dim1Desc:'你其实能理解他的沉默，但理解得多了，发现一直在替他解释。', dim2Desc:'你把两个人的沟通工作全做了。', dim3Desc:'你有识别多种爱意的能力，但用得太满了。', dim4Desc:'你在冲突中是那个先破冰的人，替两个人完成了修复。'},
+    '冷静的船锚': {subtitle:'我能接住情绪，也等得起修复。', dim1Desc:'你能理解他的沉默不是冷暴力。', dim2Desc:'你能直接表达自己的需求，不带攻击性。', dim3Desc:'你的爱意接收器是多通道的。', dim4Desc:'你对修复的节奏把握得很好。'}
 };
-function generateConclusion(scores,personality) {
-    const maxDim=Math.max(scores.dim1/50,scores.dim2/50,scores.dim3/50,scores.dim4/50);
-    const minDim=Math.min(scores.dim1/50,scores.dim2/50,scores.dim3/50,scores.dim4/50);
-    let problem='',strength='';
-    if(scores.dim4/50===maxDim) problem='你最大的困局在于冲突后的修复方式。你需要一次完整的对话才能重新感到安全，但他的修复方式是"翻篇"。';
-    else if(scores.dim2/50===maxDim) problem='你最大的困局在于表达需求的方式。你的信号加密发送，他收不到。';
-    else if(scores.dim3/50===maxDim) problem='你最大的困局在于对爱的感知通道较窄。';
-    else if(scores.dim1/50===maxDim) problem='你最大的困局在于对他的沉默过于敏感。';
-    else problem='你的四个维度比较均衡，困局不太极端。';
-    if(scores.dim3/50===minDim) strength='你的爱意接收器很有弹性，能从多种方式里感受到他的在乎。';
-    else if(scores.dim1/50===minDim) strength='你能较好地理解他的沉默，不会过度反应。';
-    else if(scores.dim2/50===minDim) strength='你能直接表达自己的需求，这会大大降低沟通成本。';
-    else strength='你在至少一个维度上表现不错。';
-    const actionMap={'沉默的接收器':'试着下一次他说"没什么"的时候，别追问，也别自己消化。就说一句："好，那你想说的时候告诉我。"','感知失调者':'试着列一张"他爱我的证据"清单，把过去一个月他做过的所有小事都写下来。','焦虑的独行者':'试着下一次你需要帮助的时候，别扛。哪怕只是说一句"我今天很累"。','等待的信号灯':'试着直接问他一句："关于我们，你是怎么想的？"不要绕弯，不要试探。','疲惫的双面镜':'试着下一次不先开口。给他留一块空地，让他自己学种花。','冷静的船锚':'你的状态不错。试着和伴侣做一个定期的"关系对话"。'};
-    return {problem,strength,action:actionMap[personality]||actionMap['冷静的船锚']};
+function generateConclusion(scores, personality) {
+    var maxDim = Math.max(scores.dim1/50, scores.dim2/50, scores.dim3/50, scores.dim4/50);
+    var minDim = Math.min(scores.dim1/50, scores.dim2/50, scores.dim3/50, scores.dim4/50);
+    var problem = '', strength = '';
+    if (scores.dim4/50 === maxDim) problem = '你最大的困局在于冲突后的修复方式。你需要一次完整的对话才能重新感到安全，但他的修复方式是"翻篇"。';
+    else if (scores.dim2/50 === maxDim) problem = '你最大的困局在于表达需求的方式。你的信号加密发送，他收不到。';
+    else if (scores.dim3/50 === maxDim) problem = '你最大的困局在于对爱的感知通道较窄。';
+    else if (scores.dim1/50 === maxDim) problem = '你最大的困局在于对他的沉默过于敏感。';
+    else problem = '你的四个维度比较均衡，困局不太极端。';
+    if (scores.dim3/50 === minDim) strength = '你的爱意接收器很有弹性，能从多种方式里感受到他的在乎。';
+    else if (scores.dim1/50 === minDim) strength = '你能较好地理解他的沉默，不会过度反应。';
+    else if (scores.dim2/50 === minDim) strength = '你能直接表达自己的需求，这会大大降低沟通成本。';
+    else strength = '你在至少一个维度上表现不错。';
+    var actionMap = {
+        '沉默的接收器': '试着下一次他说"没什么"的时候，别追问，也别自己消化。就说一句："好，那你想说的时候告诉我。"',
+        '感知失调者': '试着列一张"他爱我的证据"清单，把过去一个月他做过的所有小事都写下来。',
+        '焦虑的独行者': '试着下一次你需要帮助的时候，别扛。哪怕只是说一句"我今天很累"。',
+        '等待的信号灯': '试着直接问他一句："关于我们，你是怎么想的？"不要绕弯，不要试探。',
+        '疲惫的双面镜': '试着下一次不先开口。给他留一块空地，让他自己学种花。',
+        '冷静的船锚': '你的状态不错。试着和伴侣做一个定期的"关系对话"。'
+    };
+    return {problem: problem, strength: strength, action: actionMap[personality] || actionMap['冷静的船锚']};
 }
 
-const scores = getScores();
+var scores = getScores();
 if (!scores) {
     document.querySelector('.container').innerHTML = '<h1>未找到测评数据</h1><p>请从首页重新开始测试。</p><button class="btn primary" onclick="window.location.href=\'partner-test.html\'" style="padding:14px 32px; border-radius:12px; border:none; background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; font-size:16px; font-weight:600;">开始测试</button>';
 } else {
-    const personality=getPersonality(scores);
-    const text=personalityTexts[personality];
-    document.getElementById('personalityTag').textContent=personality;
-    document.getElementById('personalityTitle').textContent='你是：'+personality;
-    document.getElementById('personalitySubtitle').textContent=text.subtitle;
-    const d1L=getLevel(scores.dim1), d2L=getLevel(scores.dim2), d3L=getLevel(scores.dim3), d4L=getLevel(scores.dim4);
-    document.getElementById('dim1Score').textContent='得分 '+scores.dim1+'/50 · '+(d1L==='高'?'对沉默高度敏感':d1L==='中'?'偶尔被沉默影响':'能理解他的沉默');
-    document.getElementById('dim1Desc').textContent=text.dim1Desc;
-    document.getElementById('dim2Score').textContent='得分 '+scores.dim2+'/50 · '+(d2L==='高'?'需求加密发送':d2L==='中'?'偶尔间接表达':'直接表达需求');
-    document.getElementById('dim2Desc').textContent=text.dim2Desc;
-    document.getElementById('dim3Score').textContent='得分 '+scores.dim3+'/50 · '+(d3L==='高'?'偏好特定爱意通道':d3L==='中'?'能识别部分爱意':'能识别多种爱意');
-    document.getElementById('dim3Desc').textContent=text.dim3Desc;
-    document.getElementById('dim4Score').textContent='得分 '+scores.dim4+'/50 · '+(d4L==='高'?'需要深度修复':d4L==='中'?'修复节奏偶尔错位':'修复模式灵活');
-    document.getElementById('dim4Desc').textContent=text.dim4Desc;
+    var personality = getPersonality(scores);
+    var text = personalityTexts[personality];
+    document.getElementById('personalityTag').textContent = personality;
+    document.getElementById('personalityTitle').textContent = '你是：' + personality;
+    document.getElementById('personalitySubtitle').textContent = text.subtitle;
+    var d1L = getLevel(scores.dim1), d2L = getLevel(scores.dim2), d3L = getLevel(scores.dim3), d4L = getLevel(scores.dim4);
+    document.getElementById('dim1Score').textContent = '得分 ' + scores.dim1 + '/50 · ' + (d1L === '高' ? '对沉默高度敏感' : d1L === '中' ? '偶尔被沉默影响' : '能理解他的沉默');
+    document.getElementById('dim1Desc').textContent = text.dim1Desc;
+    document.getElementById('dim2Score').textContent = '得分 ' + scores.dim2 + '/50 · ' + (d2L === '高' ? '需求加密发送' : d2L === '中' ? '偶尔间接表达' : '直接表达需求');
+    document.getElementById('dim2Desc').textContent = text.dim2Desc;
+    document.getElementById('dim3Score').textContent = '得分 ' + scores.dim3 + '/50 · ' + (d3L === '高' ? '偏好特定爱意通道' : d3L === '中' ? '能识别部分爱意' : '能识别多种爱意');
+    document.getElementById('dim3Desc').textContent = text.dim3Desc;
+    document.getElementById('dim4Score').textContent = '得分 ' + scores.dim4 + '/50 · ' + (d4L === '高' ? '需要深度修复' : d4L === '中' ? '修复节奏偶尔错位' : '修复模式灵活');
+    document.getElementById('dim4Desc').textContent = text.dim4Desc;
 
-    const d1S=Math.round(scores.dim1*(40/50)), d2S=Math.round(scores.dim2*(40/50)), d3S=Math.round(scores.dim3*(40/50)), d4S=Math.round(scores.dim4*(40/50));
-    const chartDom=document.getElementById('radarChart');
-    const myChart=echarts.init(chartDom);
+    var d1S = Math.round(scores.dim1*(40/50)), d2S = Math.round(scores.dim2*(40/50)), d3S = Math.round(scores.dim3*(40/50)), d4S = Math.round(scores.dim4*(40/50));
+    var chartDom = document.getElementById('radarChart');
+    var myChart = echarts.init(chartDom);
     myChart.setOption({
-        radar:{center:['50%','50%'],radius:'65%',indicator:[{name:'沉默解读',max:40},{name:'需求表达',max:40},{name:'爱意感知',max:40},{name:'冲突修复',max:40}],axisName:{color:'rgba(255,255,255,0.7)',fontSize:12},splitArea:{areaStyle:{color:['rgba(224,90,138,0.05)','rgba(224,90,138,0.1)']}},splitLine:{lineStyle:{color:'rgba(255,255,255,0.15)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,0.2)'}}},
-        series:[{type:'radar',data:[{value:[d1S,d2S,d3S,d4S],name:'你'}],areaStyle:{color:'rgba(224,90,138,0.3)'},lineStyle:{color:'#e05a8a',width:2},itemStyle:{color:'#e05a8a'},symbol:'circle',symbolSize:6}]
+        radar: {center:['50%','50%'], radius:'65%', indicator:[{name:'沉默解读',max:40},{name:'需求表达',max:40},{name:'爱意感知',max:40},{name:'冲突修复',max:40}], axisName:{color:'rgba(255,255,255,0.7)',fontSize:12}, splitArea:{areaStyle:{color:['rgba(224,90,138,0.05)','rgba(224,90,138,0.1)']}}, splitLine:{lineStyle:{color:'rgba(255,255,255,0.15)'}}, axisLine:{lineStyle:{color:'rgba(255,255,255,0.2)'}}},
+        series:[{type:'radar', data:[{value:[d1S,d2S,d3S,d4S],name:'你'}], areaStyle:{color:'rgba(224,90,138,0.3)'}, lineStyle:{color:'#e05a8a',width:2}, itemStyle:{color:'#e05a8a'}, symbol:'circle', symbolSize:6}]
     });
-    window.addEventListener('resize',()=>myChart.resize());
+    window.addEventListener('resize', function() { myChart.resize(); });
 
-    const conclusion=generateConclusion(scores,personality);
-document.getElementById('coreProblem').textContent=conclusion.problem;
-document.getElementById('coreStrength').textContent=conclusion.strength;
-document.getElementById('actionGuide').textContent=conclusion.action;
+    var conclusion = generateConclusion(scores, personality);
+    document.getElementById('coreProblem').textContent = conclusion.problem;
+    document.getElementById('coreStrength').textContent = conclusion.strength;
+    document.getElementById('actionGuide').textContent = conclusion.action;
 
-const shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3 + '|' + scores.dim4;
-const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
-const resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=' + shareEncoded;
-const qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3 + ',' + scores.dim4);
-new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
+    var shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3 + '|' + scores.dim4;
+    var shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
+    var resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=' + shareEncoded;
+    var qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3 + ',' + scores.dim4);
+    new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
 
-document.getElementById('shareBtn').addEventListener('click', function(){
-    const btn = this;
-    btn.textContent = '正在生成...';
-    btn.disabled = true;
-    html2canvas(document.querySelector('.container'), {backgroundColor: '#1a0a28', scale: 2, useCORS: true}).then(function(canvas) {
-        const link = document.createElement('a');
-        link.download = '我的爱的接收模式.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        btn.textContent = '保存我的结果';
-        btn.disabled = false;
-    }).catch(function() {
-        btn.textContent = '生成失败，请重试';
-        btn.disabled = false;
-    });
-});
-
-document.getElementById('sharePartnerBtn').addEventListener('click', function(){
-    navigator.clipboard.writeText(resultUrl).then(function() {
-        this.textContent = '已复制！发给他吧';
-        setTimeout(function() { this.textContent = '复制链接发给他 →'; }, 2000);
-    }).catch(function() {
-        prompt('复制以下链接发给你的他：', resultUrl);
-    });
-});
-
-    if(partnerData){
-        const overlay=document.createElement('div');
-        overlay.className='modal-overlay'; overlay.id='partnerModal';
-        overlay.innerHTML='<div class="modal-box"><div class="modal-icon">🔗</div><div class="modal-title">检测到TA的测评数据</div><div class="modal-desc">TA的画像是 <b>'+partnerData.personality+'</b><br><br>你们可以生成一份「关系信号断层报告」，看看彼此在哪个频道上错过了。<br>是否现在查看？</div><div class="modal-btns"><button class="modal-btn primary" id="btnViewReport">🔍 查看报告</button><button class="modal-btn secondary" id="btnSkipReport">📋 先看自己的</button><button class="modal-btn text" id="btnCloseModal">关闭</button></div></div>';
-        document.body.appendChild(overlay);
-        document.getElementById('btnViewReport').addEventListener('click',function(){
-            document.getElementById('partnerModule').style.display='block';
-            document.getElementById('partnerInfo').innerHTML='<strong>TA的画像：'+partnerData.personality+'</strong><br>TA的得分：自我情绪 '+partnerData.dim1+'/40 · 共情回应 '+partnerData.dim2+'/35 · 爱的动力 '+partnerData.dim3+'/35';
-            const gaps=[{dim:'沉默解读',his:Math.round(partnerData.dim1*(50/40)),hers:scores.dim1,diff:Math.abs(Math.round(partnerData.dim1*(50/40))-scores.dim1),scene:'他沉默了'},{dim:'需求表达',his:Math.round(partnerData.dim2*(50/35)),hers:scores.dim2,diff:Math.abs(Math.round(partnerData.dim2*(50/35))-scores.dim2),scene:'她需要安慰'},{dim:'爱意通道',his:Math.round(partnerData.dim3*(50/35)),hers:scores.dim3,diff:Math.abs(Math.round(partnerData.dim3*(50/35))-scores.dim3),scene:'他用行动表达爱'}];
-            gaps.sort((a,b)=>b.diff-a.diff);
-            const maxGap=gaps[0];
-            const sceneTexts={'他沉默了':{gap:'你们最大的信号断层在"他沉默时"——他沉默是因为说不出来，你沉默是因为在等他开口。两个人都安静，却在不同的频道上。',her:'下次他沉默时，别问"你怎么了"，改说："你是不是还在想？没关系，想好了告诉我。"',his:'下次你脑子里一片空白时，别说"没什么"。试着说一句："我在想，但还没想好怎么说。"'},'她需要安慰':{gap:'你们最大的信号断层在"她需要安慰时"——他想帮你解决问题，你只想让他听你说完。他拿错了工具，你收错了东西。',her:'下次你想倒苦水时，提前说一句："我今天就是想发发牢骚，不用你帮我想办法，你听着就行。"',his:'下次她跟你倾诉时，先别给建议。说一句："听起来真的挺难的。"然后等她继续。'},'爱意通道':{gap:'你们最大的信号断层在"爱意表达方式"上——他用行动说爱，你用言语感知爱。他搬了十块砖，只有一块落在你接收范围内。',her:'下次他做完家务，别只说谢谢。试着说一句："你做的这些我看到了，但你能陪我说几句话吗？"',his:'下次你为她做了一件事，试着加一句简单的话："我今天有点累，但还是想帮你把这个弄好。"'}};
-            const scene=sceneTexts[maxGap.scene];
-            document.getElementById('gapScene').innerHTML='<strong>🔴 '+maxGap.scene+'</strong>：'+scene.gap;
-            document.getElementById('gapHerAdvice').textContent=scene.her;
-            document.getElementById('gapHisAdvice').textContent=scene.his;
-            overlay.remove();
+    document.getElementById('shareBtn').addEventListener('click', function(){
+        var btn = this;
+        btn.textContent = '正在生成...';
+        btn.disabled = true;
+        html2canvas(document.querySelector('.container'), {backgroundColor: '#1a0a28', scale: 2, useCORS: true}).then(function(canvas) {
+            var link = document.createElement('a');
+            link.download = '我的爱的接收模式.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            btn.textContent = '保存我的结果';
+            btn.disabled = false;
+        }).catch(function() {
+            btn.textContent = '生成失败，请重试';
+            btn.disabled = false;
         });
-        document.getElementById('btnSkipReport').addEventListener('click',()=>overlay.remove());
-        document.getElementById('btnCloseModal').addEventListener('click',()=>overlay.remove());
+    });
+
+    document.getElementById('sharePartnerBtn').addEventListener('click', function(){
+        navigator.clipboard.writeText(resultUrl).then(function() {
+            this.textContent = '已复制！发给他吧';
+            setTimeout(function() { this.textContent = '复制链接发给他 →'; }, 2000);
+        }).catch(function() {
+            prompt('复制以下链接发给你的他：', resultUrl);
+        });
+    });
+
+    if (partnerData) {
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'partnerModal';
+        overlay.innerHTML = '<div class="modal-box"><div class="modal-icon">🔗</div><div class="modal-title">检测到TA的测评数据</div><div class="modal-desc">TA的画像是 <b>' + partnerData.personality + '</b><br><br>你们可以生成一份「关系信号断层报告」，看看彼此在哪个频道上错过了。<br>是否现在查看？</div><div class="modal-btns"><button class="modal-btn primary" id="btnViewReport">🔍 查看报告</button><button class="modal-btn secondary" id="btnSkipReport">📋 先看自己的</button><button class="modal-btn text" id="btnCloseModal">关闭</button></div></div>';
+        document.body.appendChild(overlay);
+
+        document.getElementById('btnViewReport').addEventListener('click', function(){
+            document.getElementById('partnerModule').style.display = 'block';
+            document.getElementById('partnerInfo').innerHTML = '<strong>TA的画像：' + partnerData.personality + '</strong><br>TA的得分：自我情绪 ' + partnerData.dim1 + '/40 · 共情回应 ' + partnerData.dim2 + '/35 · 爱的动力 ' + partnerData.dim3 + '/35';
+            var gaps = [
+                {dim:'沉默解读', his:Math.round(partnerData.dim1*(50/40)), hers:scores.dim1, diff:Math.abs(Math.round(partnerData.dim1*(50/40))-scores.dim1), scene:'他沉默了'},
+                {dim:'需求表达', his:Math.round(partnerData.dim2*(50/35)), hers:scores.dim2, diff:Math.abs(Math.round(partnerData.dim2*(50/35))-scores.dim2), scene:'她需要安慰'},
+                {dim:'爱意通道', his:Math.round(partnerData.dim3*(50/35)), hers:scores.dim3, diff:Math.abs(Math.round(partnerData.dim3*(50/35))-scores.dim3), scene:'他用行动表达爱'}
+            ];
+            gaps.sort(function(a,b) { return b.diff - a.diff; });
+            var maxGap = gaps[0];
+            var sceneTexts = {
+                '他沉默了': {gap:'你们最大的信号断层在"他沉默时"——他沉默是因为说不出来，你沉默是因为在等他开口。两个人都安静，却在不同的频道上。', her:'下次他沉默时，别问"你怎么了"，改说："你是不是还在想？没关系，想好了告诉我。"', his:'下次你脑子里一片空白时，别说"没什么"。试着说一句："我在想，但还没想好怎么说。"'},
+                '她需要安慰': {gap:'你们最大的信号断层在"她需要安慰时"——他想帮你解决问题，你只想让他听你说完。他拿错了工具，你收错了东西。', her:'下次你想倒苦水时，提前说一句："我今天就是想发发牢骚，不用你帮我想办法，你听着就行。"', his:'下次她跟你倾诉时，先别给建议。说一句："听起来真的挺难的。"然后等她继续。'},
+                '爱意通道': {gap:'你们最大的信号断层在"爱意表达方式"上——他用行动说爱，你用言语感知爱。他搬了十块砖，只有一块落在你接收范围内。', her:'下次他做完家务，别只说谢谢。试着说一句："你做的这些我看到了，但你能陪我说几句话吗？"', his:'下次你为她做了一件事，试着加一句简单的话："我今天有点累，但还是想帮你把这个弄好。"'}
+            };
+            var scene = sceneTexts[maxGap.scene];
+            document.getElementById('gapScene').innerHTML = '<strong>🔴 ' + maxGap.scene + '</strong>：' + scene.gap;
+            document.getElementById('gapHerAdvice').textContent = scene.her;
+            document.getElementById('gapHisAdvice').textContent = scene.his;
+            overlay.remove();
+
+            document.getElementById('reopenPartnerBtn').style.display = 'block';
+        });
+
+        document.getElementById('btnSkipReport').addEventListener('click', function(){
+            overlay.remove();
+            document.getElementById('reopenPartnerBtn').style.display = 'block';
+        });
+
+        document.getElementById('btnCloseModal').addEventListener('click', function(){
+            overlay.remove();
+            document.getElementById('reopenPartnerBtn').style.display = 'block';
+        });
+
+        document.getElementById('reopenPartnerBtn').addEventListener('click', function(){
+            document.getElementById('partnerModule').style.display = 'block';
+            document.getElementById('partnerModule').scrollIntoView({behavior: 'smooth'});
+        });
     }
 }
 </script>
