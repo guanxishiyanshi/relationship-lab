@@ -40,47 +40,76 @@
 </div>
 <script src="questions.js"></script>
 <script>
-let currentIndex = 0;
-let answers = new Array(questions.length).fill(3);
-const questionNumber=document.getElementById('questionNumber');
-const questionText=document.getElementById('questionText');
-const answerSlider=document.getElementById('answerSlider');
-const prevBtn=document.getElementById('prevBtn');
-const nextBtn=document.getElementById('nextBtn');
-const progressFill=document.getElementById('progressFill');
+var currentIndex = 0;
+var answers = new Array(questions.length).fill(3);
+var questionNumber = document.getElementById('questionNumber');
+var questionText = document.getElementById('questionText');
+var answerSlider = document.getElementById('answerSlider');
+var prevBtn = document.getElementById('prevBtn');
+var nextBtn = document.getElementById('nextBtn');
+var progressFill = document.getElementById('progressFill');
 
-function saveProgress(){const progress={answers:answers,currentIndex:currentIndex,timestamp:new Date().toISOString()};localStorage.setItem('relationship-lab-progress',JSON.stringify(progress));}
-function loadProgress(){const saved=localStorage.getItem('relationship-lab-progress');if(saved){return JSON.parse(saved);}return null;}
-const savedProgress=loadProgress();
-if(savedProgress){const shouldRestore=confirm('检测到上次未完成的测试，是否从中断处继续？');if(shouldRestore){answers=savedProgress.answers;currentIndex=savedProgress.currentIndex;}else{localStorage.removeItem('relationship-lab-progress');}}
-
-function renderQuestion(){
-    const q=questions[currentIndex];
-    progressFill.style.width=((currentIndex/questions.length)*100)+'%';
-    questionNumber.textContent='第 '+(currentIndex+1)+' 题 / 共 '+questions.length+' 题';
-    questionText.textContent=q.text;
-    answerSlider.value=answers[currentIndex];
-    prevBtn.disabled=currentIndex===0;
-    nextBtn.textContent=currentIndex===questions.length-1?'查看结果 →':'下一题 →';
+function saveProgress() {
+    var progress = {answers: answers, currentIndex: currentIndex, timestamp: new Date().toISOString()};
+    localStorage.setItem('relationship-lab-progress', JSON.stringify(progress));
+}
+function loadProgress() {
+    var saved = localStorage.getItem('relationship-lab-progress');
+    if (saved) { return JSON.parse(saved); }
+    return null;
+}
+var savedProgress = loadProgress();
+if (savedProgress) {
+    var shouldRestore = confirm('检测到上次未完成的测试，是否从中断处继续？');
+    if (shouldRestore) {
+        answers = savedProgress.answers;
+        currentIndex = savedProgress.currentIndex;
+    } else {
+        localStorage.removeItem('relationship-lab-progress');
+    }
 }
 
-answerSlider.addEventListener('input',function(){answers[currentIndex]=parseInt(this.value);saveProgress();});
-prevBtn.addEventListener('click',function(){if(currentIndex>0){currentIndex--;renderQuestion();saveProgress();}});
-nextBtn.addEventListener('click',function(){
-    answers[currentIndex]=parseInt(answerSlider.value);saveProgress();
-    if(currentIndex<questions.length-1){currentIndex++;renderQuestion();}
-    else {
-        localStorage.removeItem('relationship-lab-progress');
-        let dim1Score=0,dim2Score=0,dim3Score=0;
-        questions.forEach((q,index)=>{let score=answers[index];if(q.reverse)score=6-score;if(q.dimension===1)dim1Score+=score;else if(q.dimension===2)dim2Score+=score;else if(q.dimension===3)dim3Score+=score;});
-        const resultData={dim1:dim1Score,dim2:dim2Score,dim3:dim3Score,timestamp:new Date().toISOString()};
-        localStorage.setItem('relationship-lab-result',JSON.stringify(resultData));
-        const encoded=btoa(dim1Score+','+dim2Score+','+dim3Score);
-        const params=new URLSearchParams(window.location.search);
-        const partnerParam=params.get('partner');
-        let resultUrl='result.html?scores='+encoded;
-        if(partnerParam)resultUrl+='&partner='+encodeURIComponent(partnerParam);
-        window.location.href=resultUrl;
+function renderQuestion() {
+    var q = questions[currentIndex];
+    progressFill.style.width = ((currentIndex / questions.length) * 100) + '%';
+    questionNumber.textContent = '第 ' + (currentIndex + 1) + ' 题 / 共 ' + questions.length + ' 题';
+    questionText.textContent = q.text;
+    answerSlider.value = answers[currentIndex];
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.textContent = currentIndex === questions.length - 1 ? '查看结果 →' : '下一题 →';
+}
+
+answerSlider.addEventListener('input', function() {
+    answers[currentIndex] = parseInt(this.value);
+    saveProgress();
+});
+prevBtn.addEventListener('click', function() {
+    if (currentIndex > 0) { currentIndex--; renderQuestion(); saveProgress(); }
+});
+nextBtn.addEventListener('click', function() {
+    answers[currentIndex] = parseInt(answerSlider.value);
+    saveProgress();
+    if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+    } else {
+        // 保留答题进度用于深度分析
+        var dim1Score = 0, dim2Score = 0, dim3Score = 0;
+        questions.forEach(function(q, index) {
+            var score = answers[index];
+            if (q.reverse) score = 6 - score;
+            if (q.dimension === 1) dim1Score += score;
+            else if (q.dimension === 2) dim2Score += score;
+            else if (q.dimension === 3) dim3Score += score;
+        });
+        var resultData = {dim1: dim1Score, dim2: dim2Score, dim3: dim3Score, timestamp: new Date().toISOString()};
+        localStorage.setItem('relationship-lab-result', JSON.stringify(resultData));
+        var encoded = btoa(dim1Score + ',' + dim2Score + ',' + dim3Score);
+        var params = new URLSearchParams(window.location.search);
+        var partnerParam = params.get('partner');
+        var resultUrl = 'result.html?scores=' + encoded;
+        if (partnerParam) resultUrl += '&partner=' + encodeURIComponent(partnerParam);
+        window.location.href = resultUrl;
     }
 });
 renderQuestion();

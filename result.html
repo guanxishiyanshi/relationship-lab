@@ -147,6 +147,78 @@ if (!scores) {
     document.getElementById('coreProblem').textContent=conclusion.problem;
     document.getElementById('coreStrength').textContent=conclusion.strength;
     document.getElementById('actionGuide').textContent=conclusion.action;
+    // ========== 关键题深度分析 ==========
+var deepAnalysisHTML = '';
+var answers = JSON.parse(localStorage.getItem('relationship-lab-progress'));
+if (answers && answers.answers) {
+    var userAnswers = answers.answers;
+    
+    // 第5题：情绪处理延迟
+    var q5 = userAnswers[4];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#f0974a;">🧠 第5题 · 吵完架你多久才能明白自己怎么了</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q5 >= 4) {
+        deepAnalysisHTML += '你不是没有感觉，是你的感觉来得比较慢。吵完架的当下，你心里是堵的，但说不清那股堵是什么。生气？委屈？受伤？可能要过好几个小时，甚至好几天，在一个人待着的时候，才慢慢明白——哦，原来我当时觉得被忽视了。这不是你不想沟通，是你的情绪需要时间才能被读取出来。你的伴侣可能会觉得你不在乎，但其实你在乎，只是你的处理器需要更长时间。<br><br>下次可以试着跟她说一句："我现在还说不清，但我在想。等我想清楚了，我会告诉你。"这句话本身，就是一种回应。';
+    } else if (q5 >= 2) {
+        deepAnalysisHTML += '你有时候能在当下感觉到自己怎么了，有时候不能。平静的时候还行，一旦情绪上来了，那个感觉就乱了。说着说着突然卡住，或者干脆不说了——不是不想说，是说不清了。这不是什么问题，只是你的情绪读取能力还在练习，遇到压力会退回去。它需要一点时间，也需要一点安全感。';
+    } else {
+        deepAnalysisHTML += '你在冲突中对自己情绪的读取速度还不错。你知道自己是生气还是委屈，是失望还是受伤。这份能力不是每个人都有的——如果你曾经也说不清，那么现在能做到，说明你在刻意练习。它不需要完美，只需要继续。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第7题：自我关怀缺失
+    var q7 = userAnswers[6];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#f0974a;">💬 第7题 · 你对自己说话的方式</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q7 >= 4) {
+        deepAnalysisHTML += '你可能已经很久没有意识到自己对自己有多严格了。犯错的时候，"你怎么又搞砸了"；做得不够好的时候，"看看别人再看看你"。这些话你不会对朋友说，但对自己，你能说一整天。它可能已经变成了一种你习惯了的背景音——一直存在，以至于你不再注意到它。<br><br>试着做一个小实验：下次你又开始在心里批评自己时，停下来，换个角度想——如果这件事是你最好的朋友遇到的，他来跟你倾诉，你会对他说同样的话吗？如果不会，那能不能对自己也温柔一点？';
+    } else if (q7 >= 2) {
+        deepAnalysisHTML += '你偶尔能注意到自己对自己太苛刻了，但这份觉察还不够稳定。在一切顺利的时候，你能接纳自己；压力一来，那个苛责的声音又会冒出来。你已经走到这一步了——能觉察到，就是改变的开始。下次那个苛责声出现的时候，试着跟它说一句："我知道了，但我今天只想好好休息。"';
+    } else {
+        deepAnalysisHTML += '你能比较清楚地感知到自己对待自己的方式。你内心可能有一个相对温和的声音，在你犯错时会说"没事，下次注意"，而不是"你怎么这么笨"。这份自我关怀不是每个人都有的，如果你曾经也需要练习才能做到，那它就是你给自己最好的礼物。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第8题：关系中的失语
+    var q8 = userAnswers[7];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#f0974a;">🔇 第8题 · 被质问时你还能说出话吗</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q8 >= 4) {
+        deepAnalysisHTML += '"你到底在想什么？"——这句话对于你来说，可能像一个开关。啪一下，脑子就空了。不是没有想法，是那些想法在看到她的眼神、听到她的语气时，一下子全都挤在了门口，谁也出不去。这不是你在对抗她，也不是你在冷暴力，是你的大脑在那一刻信息过载了。<br><br>下次遇到这种情况，可以试着说一句："我在想，但给我一点时间。"不是为了拖时间，是为了把堵在门口的那些想法，一个一个地放出来。';
+    } else if (q8 >= 2) {
+        deepAnalysisHTML += '在相对平静的对话中，你能说出自己的感受。但一旦对话变成质问，你的表达通道就会收窄。不是不想说，是不知道怎么在这个温度下说才不会让事情更糟。这种感觉很正常——很多人在压力的对话中都会卡壳。一句"我在听，只是还没组织好"就能让对方知道你人还在，只是嘴还没跟上。';
+    } else {
+        deepAnalysisHTML += '遇到伴侣强烈的情绪质问时，你还能保持一定的表达清晰度。这是一份不太常见、也很难通过后天练习就能完全掌握的能力。如果你天生就擅长在压力下保持连接，那你是真的很幸运。如果你也是从说不出来慢慢练出来的，那你应该为自己感到骄傲。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第11题：工具式回应
+    var q11 = userAnswers[10];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#f0974a;">🔧 第11题 · 你习惯帮她解决问题还是听她说完</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q11 >= 4) {
+        deepAnalysisHTML += '你表达关心的方式，是帮她想办法。她一说完，你就开始分析、给建议、列方案。你觉得事情处理完了，但她看起来好像并没有好一点。你可能有点困惑：我不是已经帮忙了吗？——因为你给的是方案，但她要的，可能只是被听到。你手里一直拿着那把锤子，但她需要的是一张椅子。<br><br>下次在你准备开口给建议之前，可以试着先问一句："你想我帮忙想想办法，还是想我陪你一会儿？"这句话会帮你省很多力气。';
+    } else if (q11 >= 2) {
+        deepAnalysisHTML += '你有时候能用倾听回应，有时候会不自觉切回"解决问题"模式。可能聊着聊着，你就从听众变成了顾问。你自己可能都没注意到这个切换。这是很多正在练习的人都会经历的——旧的模式还不肯退场，新的模式还在学。再试几次就熟了。';
+    } else {
+        deepAnalysisHTML += '你在伴侣倒苦水时，不太会直接用建议来收尾。你可能已经有了先倾听的习惯，或者你天生就分得清——什么是需要被解决的事，什么是需要被接住的感受。这份能力很难得，它让你在关系中给出的东西，常常刚好是对方需要的。';
+    }
+    deepAnalysisHTML += '</div></div>';
+    
+    // 第21题：逃避式婚姻动机
+    var q21 = userAnswers[20];
+    deepAnalysisHTML += '<div class="dim-card"><div class="dim-name" style="color:#f0974a;">❤️ 第21题 · 你爱一个人是因为想爱还是怕孤独</div><div class="dim-desc" style="margin-top:8px;">';
+    if (q21 >= 4) {
+        deepAnalysisHTML += '你会想要一段感情，一部分原因是害怕孤独。夜深人静的时候，一个人老去的画面，确实会让人心慌。这不丢人。但有一点可能需要留意——如果害怕成了你留在一段关系里的主要理由，它可能会让你勉强自己。怕孤独可以敲门，但别让它进主卧。你值得的是一段因为"想和对方在一起"而选择的关系，不只是因为"不想一个人"才留下。';
+    } else if (q21 >= 2) {
+        deepAnalysisHTML += '你内心有两个声音。一个说：去找个人吧，以后老了怎么办。另一个说：还是要找个自己真的喜欢的人。这两股力量各占一块，偶尔打架。这很难一两天想清，但至少你看到了——你不是只有恐惧在推你走。你对爱也有自己的想法。';
+    } else {
+        deepAnalysisHTML += '你想要一段关系，更多是因为你想爱，不是因为怕孤独。你对一个人终老这件事没有那么深的恐惧——或者你已经有能力在独处中找到平静。这份动力是纯粹的，请珍惜它。';
+    }
+    deepAnalysisHTML += '</div></div>';
+}
+
+// 把深度分析插入到综合结论后面
+var actionGuideCard = document.getElementById('actionGuide').parentElement;
+var deepDiv = document.createElement('div');
+deepDiv.innerHTML = deepAnalysisHTML;
+actionGuideCard.parentNode.insertBefore(deepDiv, actionGuideCard.nextSibling);
 
     var shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3;
     var shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
