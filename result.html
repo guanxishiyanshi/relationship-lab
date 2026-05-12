@@ -6,77 +6,28 @@
     <title>你的情感出厂设置</title>
     <style>
         body {
-            margin: 0;
-            padding: 16px;
+            margin: 0; padding: 16px;
             background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 100%);
             min-height: 100vh;
             font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
-            color: #ffffff;
-            box-sizing: border-box;
+            color: #ffffff; box-sizing: border-box;
         }
-        .container {
-            max-width: 420px;
-            margin: 0 auto;
-            padding-bottom: 40px;
-        }
-        .tag {
-            display: inline-block;
-            background: linear-gradient(135deg, #f0974a, #e05a2a);
-            padding: 8px 24px;
-            border-radius: 100px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        .main-title {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .main-subtitle {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 32px;
-            line-height: 1.5;
-        }
-        .radar-box {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 16px;
-            margin-bottom: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .container { max-width: 420px; margin: 0 auto; padding-bottom: 40px; }
+        .tag { display: inline-block; background: linear-gradient(135deg, #f0974a, #e05a2a); padding: 8px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
+        .main-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .main-subtitle { font-size: 16px; color: rgba(255,255,255,0.6); margin-bottom: 32px; line-height: 1.5; }
+        .radar-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 20px; padding: 16px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); }
         #radarChart { width: 100%; height: 320px; }
-        .dim-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        .dim-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1); }
         .dim-card .dim-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
         .dim-card .dim-score { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
         .dim-card .dim-desc { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.75); }
         .bottom-btns { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
-        .btn {
-            flex: 1; min-width: 120px; padding: 14px; border-radius: 12px;
-            border: none; font-size: 16px; font-weight: 600; cursor: pointer; text-align: center;
-        }
+        .btn { flex: 1; min-width: 120px; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn.primary { background: linear-gradient(135deg, #f0974a, #e05a2a); color: #fff; }
         .btn.secondary { background: rgba(255,255,255,0.1); color: #fff; }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .modal-box {
-            background: #1a2a4a; border-radius: 20px; padding: 28px 24px;
-            margin: 16px; max-width: 360px; text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .modal-box { background: #1a2a4a; border-radius: 20px; padding: 28px 24px; margin: 16px; max-width: 360px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .modal-box .modal-icon { font-size: 40px; margin-bottom: 12px; }
         .modal-box .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
         .modal-box .modal-desc { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.6; }
@@ -92,9 +43,9 @@
         <div class="tag" id="personalityTag">...</div>
         <div class="main-title" id="personalityTitle">...</div>
         <div class="main-subtitle" id="personalitySubtitle">...</div>
-        
+
         <div class="radar-box"><div id="radarChart"></div></div>
-        
+
         <div class="dim-card">
             <div class="dim-name">维度一：自我情绪的识别与接纳</div>
             <div class="dim-score" id="dim1Score">...</div>
@@ -142,12 +93,9 @@
 
         <div class="dim-card" style="background:rgba(240,151,74,0.08);">
             <div class="dim-name">📌 关于这份结果</div>
-            <div class="dim-desc" style="margin-top:8px;">
-                这份报告照见的，是你当下的情感模式，不是对你这个人的评判。<br><br>
-                模式可以被看见，也可以被改变。你今天愿意花时间了解自己，这本身就是一次重要的突破。
-            </div>
+            <div class="dim-desc" style="margin-top:8px;">这份报告照见的，是你当下的情感模式，不是对你这个人的评判。<br><br>模式可以被看见，也可以被改变。你今天愿意花时间了解自己，这本身就是一次重要的突破。</div>
         </div>
-        
+
         <div class="bottom-btns">
             <button class="btn secondary" onclick="window.location.href='test.html'">重新测试</button>
             <button class="btn primary" id="shareBtn">保存我的结果</button>
@@ -169,8 +117,9 @@
             const encoded = params.get('partner');
             if (!encoded) return null;
             try {
-                const decoded = atob(encoded);
-                const parts = decoded.split('|');
+            const decoded = decodeURIComponent(escape(atob(encoded)));
+            const parts = decoded.split('|');
+            if (parts.length >= 4) parts[0] = decodeURIComponent(parts[0]);
                 if (parts.length === 5) {
                     return { personality: parts[0], dim1: parseInt(parts[1]), dim2: parseInt(parts[2]), dim3: parseInt(parts[3]), dim4: parseInt(parts[4]) };
                 }
@@ -283,8 +232,8 @@
             document.getElementById('coreStrength').textContent = conclusion.strength;
             document.getElementById('actionGuide').textContent = conclusion.action;
 
-            const shareData = `${personality}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
-            const shareEncoded = btoa(shareData);
+            const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
+            const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
             const resultUrl = window.location.href.split('?')[0] + `?partner=${shareEncoded}`;
             new QRCode(document.getElementById("qrcode"), { text: resultUrl, width:80, height:80, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });
 

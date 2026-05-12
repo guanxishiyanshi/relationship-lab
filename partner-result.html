@@ -26,7 +26,6 @@
         .btn { flex: 1; min-width: 120px; padding: 14px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn.primary { background: linear-gradient(135deg, #e05a8a, #c04a6a); color: #fff; }
         .btn.secondary { background: rgba(255,255,255,0.1); color: #fff; }
-
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .modal-box { background: #2a1a4a; border-radius: 20px; padding: 28px 24px; margin: 16px; max-width: 360px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .modal-box .modal-icon { font-size: 40px; margin-bottom: 12px; }
@@ -49,26 +48,21 @@
         <div class="dim-card"><div class="dim-name">维度二：表达需求的清晰度</div><div class="dim-score" id="dim2Score">...</div><div class="dim-desc" id="dim2Desc">...</div></div>
         <div class="dim-card"><div class="dim-name">维度三：对"被爱"的感知通道</div><div class="dim-score" id="dim3Score">...</div><div class="dim-desc" id="dim3Desc">...</div></div>
         <div class="dim-card"><div class="dim-name">维度四：冲突后的修复意愿与模式</div><div class="dim-score" id="dim4Score">...</div><div class="dim-desc" id="dim4Desc">...</div></div>
-
         <div class="dim-card" style="border:1px solid rgba(224,90,138,0.3);"><div class="dim-name" style="color:#e05a8a;">🔍 你的核心困局</div><div class="dim-desc" id="coreProblem" style="margin-top:8px;"></div></div>
         <div class="dim-card"><div class="dim-name" style="color:#e05a8a;">💡 你的潜在优势</div><div class="dim-desc" id="coreStrength" style="margin-top:8px;"></div></div>
         <div class="dim-card"><div class="dim-name" style="color:#e05a8a;">🚀 你的行动指南</div><div class="dim-desc" id="actionGuide" style="margin-top:8px;"></div></div>
-
         <div id="partnerModule" style="display:none;">
             <div class="dim-card" style="border:2px solid rgba(224,90,138,0.5);"><div class="dim-name" style="color:#e05a8a;">🔗 你们的关系信号断层</div><div class="dim-desc" id="partnerInfo" style="margin-top:8px;"></div><div class="dim-desc" id="gapScene" style="margin-top:12px;"></div></div>
             <div class="dim-card"><div class="dim-name" style="color:#e05a8a;">👤 给你的一句话</div><div class="dim-desc" id="gapHerAdvice" style="margin-top:8px;"></div></div>
             <div class="dim-card"><div class="dim-name" style="color:#e05a8a;">👤 给他的一句话</div><div class="dim-desc" id="gapHisAdvice" style="margin-top:8px;"></div></div>
         </div>
-
         <div class="dim-card" style="background:rgba(224,90,138,0.08);"><div class="dim-name">📌 关于这份结果</div><div class="dim-desc" style="margin-top:8px;">这份报告照见的，是你当下的情感模式，不是对你这个人的评判。<br><br>模式可以被看见，也可以被改变。你今天愿意花时间了解自己，这本身就是一次重要的突破。</div></div>
-        
         <div class="bottom-btns">
             <button class="btn secondary" onclick="window.location.href='partner-test.html'">重新测试</button>
             <button class="btn primary" id="shareBtn">保存我的结果</button>
             <button class="btn primary" id="sharePartnerBtn" style="background:linear-gradient(135deg,#f0974a,#e05a2a);">复制链接发给他 →</button>
         </div>
     </div>
-
     <div style="position:fixed; top:80px; right:16px; z-index:999; background:#ffffff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
         <div id="qrcode" style="display:inline-block; width:80px; height:80px;"></div>
         <p style="font-size:10px; color:#666; margin:4px 0 0;">扫码看结果</p>
@@ -83,9 +77,10 @@
             const encoded = params.get('partner');
             if (!encoded) return null;
             try {
-                const decoded = atob(encoded);
+                const decoded = decodeURIComponent(escape(atob(encoded)));
                 const parts = decoded.split('|');
                 if (parts.length === 4) {
+                    parts[0] = decodeURIComponent(parts[0]);
                     return { personality: parts[0], dim1: parseInt(parts[1]), dim2: parseInt(parts[2]), dim3: parseInt(parts[3]) };
                 }
             } catch (e) {}
@@ -129,10 +124,10 @@
             const maxDim = Math.max(scores.dim1/50,scores.dim2/50,scores.dim3/50,scores.dim4/50);
             const minDim = Math.min(scores.dim1/50,scores.dim2/50,scores.dim3/50,scores.dim4/50);
             let problem='', strength='';
-            if(scores.dim1/50===maxDim) problem='你最大的困局在于对他的沉默过于敏感。';
+            if(scores.dim4/50===maxDim) problem='你最大的困局在于冲突后的修复方式。你需要一次完整的对话才能重新感到安全，但他的修复方式是"翻篇"。';
             else if(scores.dim2/50===maxDim) problem='你最大的困局在于表达需求的方式。你的信号加密发送，他收不到。';
             else if(scores.dim3/50===maxDim) problem='你最大的困局在于对爱的感知通道较窄。';
-            else if(scores.dim4/50===maxDim) problem='你最大的困局在于冲突后的修复方式。你需要一次完整的对话才能重新感到安全。';
+            else if(scores.dim1/50===maxDim) problem='你最大的困局在于对他的沉默过于敏感。';
             else problem='你的四个维度比较均衡，困局不太极端。';
             if(scores.dim3/50===minDim) strength='你的爱意接收器很有弹性，能从多种方式里感受到他的在乎。';
             else if(scores.dim1/50===minDim) strength='你能较好地理解他的沉默，不会过度反应。';
@@ -182,8 +177,8 @@
             document.getElementById('coreStrength').textContent = conclusion.strength;
             document.getElementById('actionGuide').textContent = conclusion.action;
 
-            const shareData = `${personality}|${scores.dim1}|${scores.dim2}|${scores.dim3}|${scores.dim4}`;
-            const shareEncoded = btoa(shareData);
+            const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}|${scores.dim4}`;
+            const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
             const resultUrl = window.location.href.split('?')[0] + `?partner=${shareEncoded}`;
             new QRCode(document.getElementById("qrcode"), { text: resultUrl, width:80, height:80, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });
 
@@ -194,19 +189,13 @@
                     btn.textContent = '保存我的结果'; btn.disabled = false;
                 }).catch(() => { btn.textContent = '生成失败，请重试'; btn.disabled = false; });
             });
+
             document.getElementById('sharePartnerBtn').addEventListener('click', function(){
                 const link = window.location.href.split('?')[0] + `?partner=${shareEncoded}`;
                 navigator.clipboard.writeText(link).then(() => {
                     this.textContent = '已复制！发给他吧';
                     setTimeout(() => { this.textContent = '复制链接发给他 →'; }, 2000);
                 }).catch(() => { prompt('复制以下链接发给你的他：', link); });
-            });
-
-            document.getElementById('sharePartnerBtn').addEventListener('click', function(){
-                navigator.clipboard.writeText(resultUrl).then(() => {
-                    this.textContent = '已复制！发给他吧';
-                    setTimeout(() => { this.textContent = '复制链接发给他 →'; }, 2000);
-                }).catch(() => { prompt('复制以下链接发给你的他：', resultUrl); });
             });
 
             if (partnerData) {
