@@ -54,7 +54,6 @@
         <button class="btn secondary" onclick="window.location.href='test.html'">重新测试</button>
         <button class="btn primary" id="shareBtn">保存我的结果</button>
         <button class="btn primary" id="sharePartnerBtn" style="background:linear-gradient(135deg,#e05a8a,#c04a6a);">复制链接发给她 →</button>
-    </div>
 </div>
 <div style="position:fixed; top:80px; right:16px; z-index:999; background:#fff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
     <div id="qrcode" style="display:inline-block; width:80px; height:80px;"></div>
@@ -153,19 +152,19 @@ if (!scores) {
     new QRCode(document.getElementById("qrcode"),{text:resultUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
 
     document.getElementById('shareBtn').addEventListener('click',function(){
-        const btn=this; btn.textContent='正在生成...'; btn.disabled=true;
-        html2canvas(document.querySelector('.container'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(canvas=>{
-            const link=document.createElement('a'); link.download='我的情感出厂设置.png'; link.href=canvas.toDataURL('image/png'); link.click();
-            btn.textContent='保存我的结果'; btn.disabled=false;
-        }).catch(()=>{btn.textContent='生成失败，请重试'; btn.disabled=false;});
-    });
+    const btn=this; btn.textContent='正在生成...'; btn.disabled=true;
+    html2canvas(document.querySelector('.container'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(canvas=>{
+        const link=document.createElement('a'); link.download='我的情感出厂设置.png'; link.href=canvas.toDataURL('image/png'); link.click();
+        btn.textContent='保存我的结果'; btn.disabled=false;
+    }).catch(()=>{btn.textContent='生成失败，请重试'; btn.disabled=false;});
+});
 
-    document.getElementById('sharePartnerBtn').addEventListener('click',function(){
-        navigator.clipboard.writeText(resultUrl).then(()=>{
-            this.textContent='已复制！发给她吧';
-            setTimeout(()=>{this.textContent='复制链接发给她 →';},2000);
-        }).catch(()=>{prompt('复制以下链接发给你的她：',resultUrl);});
-    });
+document.getElementById('sharePartnerBtn').addEventListener('click',function(){
+    navigator.clipboard.writeText(resultUrl).then(()=>{
+        this.textContent='已复制！发给她吧';
+        setTimeout(()=>{this.textContent='复制链接发给她 →';},2000);
+    }).catch(()=>{prompt('复制以下链接发给你的她：',resultUrl);});
+});
 
     if(partnerData){
         const overlay=document.createElement('div');
