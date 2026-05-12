@@ -148,10 +148,7 @@ if (!scores) {
 
     const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
     const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
-    const resultUrl = `https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=${shareEncoded}`;
-    new QRCode(document.getElementById("qrcode"),{text:resultUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
-
-    document.getElementById('shareBtn').addEventListener('click',function(){
+    const resultUrl = `https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=${shareEncoded}`;    document.getElementById('shareBtn').addEventListener('click',function(){
     const btn=this; btn.textContent='正在生成...'; btn.disabled=true;
     html2canvas(document.querySelector('.container'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(canvas=>{
         const link=document.createElement('a'); link.download='我的情感出厂设置.png'; link.href=canvas.toDataURL('image/png'); link.click();
