@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情感出厂设置 · 测试中</title>
+    <title>爱的接收与表达模式 · 测试中</title>
     <style>
-        body { margin:0; padding:16px; background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; box-sizing:border-box; }
+        body { margin:0; padding:16px; background:linear-gradient(135deg,#1a0a28 0%,#2a1a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; box-sizing:border-box; }
         .progress-bar { width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-bottom:32px; }
-        .progress-fill { height:100%; background:linear-gradient(90deg,#f0974a,#e05a2a); border-radius:2px; width:0%; transition:width 0.3s; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,#e05a8a,#c04a6a); border-radius:2px; width:0%; transition:width 0.3s; }
         .question-card { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border-radius:20px; padding:32px 24px; margin-bottom:24px; border:1px solid rgba(255,255,255,0.1); }
         .question-number { font-size:14px; color:rgba(255,255,255,0.4); margin-bottom:16px; }
         .question-text { font-size:20px; font-weight:500; line-height:1.5; margin-bottom:32px; }
         .slider-container { padding:0 4px; }
         .slider-labels { display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:12px; }
         .slider { width:100%; -webkit-appearance:none; appearance:none; height:6px; background:rgba(255,255,255,0.15); border-radius:3px; outline:none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:28px; height:28px; background:#f0974a; border-radius:50%; cursor:pointer; box-shadow:0 2px 8px rgba(240,151,74,0.4); }
+        .slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:28px; height:28px; background:#e05a8a; border-radius:50%; cursor:pointer; box-shadow:0 2px 8px rgba(224,90,138,0.4); }
         .slider-values { display:flex; justify-content:space-between; font-size:14px; color:rgba(255,255,255,0.5); margin-top:8px; padding:0 2px; }
         .nav-buttons { display:flex; gap:12px; margin-top:32px; }
         .nav-btn { flex:1; padding:14px; border-radius:12px; border:none; font-size:16px; font-weight:600; cursor:pointer; }
-        .nav-btn.primary { background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; }
+        .nav-btn.primary { background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; }
         .nav-btn.secondary { background:rgba(255,255,255,0.1); color:#fff; }
         .nav-btn:disabled { opacity:0.3; cursor:not-allowed; }
     </style>
@@ -38,10 +38,10 @@
     <button class="nav-btn secondary" id="prevBtn" disabled>← 上一题</button>
     <button class="nav-btn primary" id="nextBtn">下一题 →</button>
 </div>
-<script src="questions.js"></script>
+<script src="questions-partner.js"></script>
 <script>
 var currentIndex = 0;
-var answers = new Array(questions.length).fill(3);
+var answers = new Array(partnerQuestions.length).fill(3);
 var questionNumber = document.getElementById('questionNumber');
 var questionText = document.getElementById('questionText');
 var answerSlider = document.getElementById('answerSlider');
@@ -51,10 +51,10 @@ var progressFill = document.getElementById('progressFill');
 
 function saveProgress() {
     var progress = {answers: answers, currentIndex: currentIndex, timestamp: new Date().toISOString()};
-    localStorage.setItem('relationship-lab-progress', JSON.stringify(progress));
+    localStorage.setItem('partner-lab-progress', JSON.stringify(progress));
 }
 function loadProgress() {
-    var saved = localStorage.getItem('relationship-lab-progress');
+    var saved = localStorage.getItem('partner-lab-progress');
     if (saved) { return JSON.parse(saved); }
     return null;
 }
@@ -65,18 +65,18 @@ if (savedProgress) {
         answers = savedProgress.answers;
         currentIndex = savedProgress.currentIndex;
     } else {
-        localStorage.removeItem('relationship-lab-progress');
+        localStorage.removeItem('partner-lab-progress');
     }
 }
 
 function renderQuestion() {
-    var q = questions[currentIndex];
-    progressFill.style.width = ((currentIndex / questions.length) * 100) + '%';
-    questionNumber.textContent = '第 ' + (currentIndex + 1) + ' 题 / 共 ' + questions.length + ' 题';
+    var q = partnerQuestions[currentIndex];
+    progressFill.style.width = ((currentIndex / partnerQuestions.length) * 100) + '%';
+    questionNumber.textContent = '第 ' + (currentIndex + 1) + ' 题 / 共 ' + partnerQuestions.length + ' 题';
     questionText.textContent = q.text;
     answerSlider.value = answers[currentIndex];
     prevBtn.disabled = currentIndex === 0;
-    nextBtn.textContent = currentIndex === questions.length - 1 ? '查看结果 →' : '下一题 →';
+    nextBtn.textContent = currentIndex === partnerQuestions.length - 1 ? '查看结果 →' : '下一题 →';
 }
 
 answerSlider.addEventListener('input', function() {
@@ -89,25 +89,26 @@ prevBtn.addEventListener('click', function() {
 nextBtn.addEventListener('click', function() {
     answers[currentIndex] = parseInt(answerSlider.value);
     saveProgress();
-    if (currentIndex < questions.length - 1) {
+    if (currentIndex < partnerQuestions.length - 1) {
         currentIndex++;
         renderQuestion();
     } else {
         // 保留答题进度用于深度分析
-        var dim1Score = 0, dim2Score = 0, dim3Score = 0;
-        questions.forEach(function(q, index) {
+        var dim1Score = 0, dim2Score = 0, dim3Score = 0, dim4Score = 0;
+        partnerQuestions.forEach(function(q, index) {
             var score = answers[index];
             if (q.reverse) score = 6 - score;
             if (q.dimension === 1) dim1Score += score;
             else if (q.dimension === 2) dim2Score += score;
             else if (q.dimension === 3) dim3Score += score;
+            else if (q.dimension === 4) dim4Score += score;
         });
-        var resultData = {dim1: dim1Score, dim2: dim2Score, dim3: dim3Score, timestamp: new Date().toISOString()};
-        localStorage.setItem('relationship-lab-result', JSON.stringify(resultData));
-        var encoded = btoa(dim1Score + ',' + dim2Score + ',' + dim3Score);
+        var resultData = {dim1: dim1Score, dim2: dim2Score, dim3: dim3Score, dim4: dim4Score, timestamp: new Date().toISOString()};
+        localStorage.setItem('partner-lab-result', JSON.stringify(resultData));
+        var encoded = btoa(dim1Score + ',' + dim2Score + ',' + dim3Score + ',' + dim4Score);
         var params = new URLSearchParams(window.location.search);
         var partnerParam = params.get('partner');
-        var resultUrl = 'result.html?scores=' + encoded;
+        var resultUrl = 'partner-result.html?scores=' + encoded;
         if (partnerParam) resultUrl += '&partner=' + encodeURIComponent(partnerParam);
         window.location.href = resultUrl;
     }
