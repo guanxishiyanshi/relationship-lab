@@ -67,7 +67,6 @@
         .btn.primary { background: linear-gradient(135deg, #f0974a, #e05a2a); color: #fff; }
         .btn.secondary { background: rgba(255,255,255,0.1); color: #fff; }
 
-        /* 弹窗样式 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); z-index: 9999;
@@ -112,7 +111,6 @@
             <div class="dim-desc" id="dim3Desc">...</div>
         </div>
 
-        <!-- 综合结论 -->
         <div class="dim-card" style="border:1px solid rgba(240,151,74,0.3);">
             <div class="dim-name" style="color:#f0974a;">🔍 你的核心困局</div>
             <div class="dim-desc" id="coreProblem" style="margin-top:8px;"></div>
@@ -126,7 +124,6 @@
             <div class="dim-desc" id="actionGuide" style="margin-top:8px;"></div>
         </div>
 
-        <!-- 关系痛点探测 -->
         <div id="partnerModule" style="display:none;">
             <div class="dim-card" style="border:2px solid rgba(240,151,74,0.5);">
                 <div class="dim-name" style="color:#f0974a;">🔗 你们的关系信号断层</div>
@@ -286,13 +283,11 @@
             document.getElementById('coreStrength').textContent = conclusion.strength;
             document.getElementById('actionGuide').textContent = conclusion.action;
 
-            // 二维码
             const shareData = `${personality}|${scores.dim1}|${scores.dim2}|${scores.dim3}`;
             const shareEncoded = btoa(shareData);
             const resultUrl = window.location.href.split('?')[0] + `?partner=${shareEncoded}`;
             new QRCode(document.getElementById("qrcode"), { text: resultUrl, width:80, height:80, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });
 
-            // 保存结果
             document.getElementById('shareBtn').addEventListener('click', function(){
                 const btn = this; btn.textContent = '正在生成...'; btn.disabled = true;
                 html2canvas(document.querySelector('.container'), { backgroundColor:'#0a1628', scale:2, useCORS:true }).then(canvas => {
@@ -301,7 +296,6 @@
                 }).catch(() => { btn.textContent = '生成失败，请重试'; btn.disabled = false; });
             });
 
-            // 复制链接发给她
             document.getElementById('sharePartnerBtn').addEventListener('click', function(){
                 navigator.clipboard.writeText(resultUrl).then(() => {
                     this.textContent = '已复制！发给她吧';
@@ -309,7 +303,6 @@
                 }).catch(() => { prompt('复制以下链接发给你的她：', resultUrl); });
             });
 
-            // 关系痛点探测弹窗
             if (partnerData) {
                 const overlay = document.createElement('div');
                 overlay.className = 'modal-overlay'; overlay.id = 'partnerModal';

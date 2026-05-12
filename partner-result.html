@@ -194,6 +194,13 @@
                     btn.textContent = '保存我的结果'; btn.disabled = false;
                 }).catch(() => { btn.textContent = '生成失败，请重试'; btn.disabled = false; });
             });
+            document.getElementById('sharePartnerBtn').addEventListener('click', function(){
+                const link = window.location.href.split('?')[0] + `?partner=${shareEncoded}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    this.textContent = '已复制！发给他吧';
+                    setTimeout(() => { this.textContent = '复制链接发给他 →'; }, 2000);
+                }).catch(() => { prompt('复制以下链接发给你的他：', link); });
+            });
 
             document.getElementById('sharePartnerBtn').addEventListener('click', function(){
                 navigator.clipboard.writeText(resultUrl).then(() => {
