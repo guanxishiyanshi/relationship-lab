@@ -152,28 +152,41 @@ if (!scores) {
     window.addEventListener('resize',()=>myChart.resize());
 
     const conclusion=generateConclusion(scores,personality);
-    document.getElementById('coreProblem').textContent=conclusion.problem;
-    document.getElementById('coreStrength').textContent=conclusion.strength;
-    document.getElementById('actionGuide').textContent=conclusion.action;
+document.getElementById('coreProblem').textContent=conclusion.problem;
+document.getElementById('coreStrength').textContent=conclusion.strength;
+document.getElementById('actionGuide').textContent=conclusion.action;
 
-    const shareData = `${encodeURIComponent(personality)}|${scores.dim1}|${scores.dim2}|${scores.dim3}|${scores.dim4}`;
-    const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
-    const resultUrl = `https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=${shareEncoded}`;    new QRCode(document.getElementById("qrcode"),{text:resultUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+const shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3 + '|' + scores.dim4;
+const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
+const resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=' + shareEncoded;
+const qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3 + ',' + scores.dim4);
+new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
 
-    document.getElementById('shareBtn').addEventListener('click',function(){
-        const btn=this; btn.textContent='正在生成...'; btn.disabled=true;
-        html2canvas(document.querySelector('.container'),{backgroundColor:'#1a0a28',scale:2,useCORS:true}).then(canvas=>{
-            const link=document.createElement('a'); link.download='我的爱的接收模式.png'; link.href=canvas.toDataURL('image/png'); link.click();
-            btn.textContent='保存我的结果'; btn.disabled=false;
-        }).catch(()=>{btn.textContent='生成失败，请重试'; btn.disabled=false;});
+document.getElementById('shareBtn').addEventListener('click', function(){
+    const btn = this;
+    btn.textContent = '正在生成...';
+    btn.disabled = true;
+    html2canvas(document.querySelector('.container'), {backgroundColor: '#1a0a28', scale: 2, useCORS: true}).then(function(canvas) {
+        const link = document.createElement('a');
+        link.download = '我的爱的接收模式.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '保存我的结果';
+        btn.disabled = false;
+    }).catch(function() {
+        btn.textContent = '生成失败，请重试';
+        btn.disabled = false;
     });
+});
 
-    document.getElementById('sharePartnerBtn').addEventListener('click',function(){
-        navigator.clipboard.writeText(resultUrl).then(()=>{
-            this.textContent='已复制！发给他吧';
-            setTimeout(()=>{this.textContent='复制链接发给他 →';},2000);
-        }).catch(()=>{prompt('复制以下链接发给你的他：',resultUrl);});
+document.getElementById('sharePartnerBtn').addEventListener('click', function(){
+    navigator.clipboard.writeText(resultUrl).then(function() {
+        this.textContent = '已复制！发给他吧';
+        setTimeout(function() { this.textContent = '复制链接发给他 →'; }, 2000);
+    }).catch(function() {
+        prompt('复制以下链接发给你的他：', resultUrl);
     });
+});
 
     if(partnerData){
         const overlay=document.createElement('div');

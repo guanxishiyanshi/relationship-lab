@@ -149,9 +149,7 @@ document.getElementById('actionGuide').textContent=conclusion.action;
 const shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3;
 const shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
 const resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=' + shareEncoded;
-const qrUrl = window.location.href.split('?')[0] + '?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3);
-new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
-
+const qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3);new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
 document.getElementById('shareBtn').addEventListener('click', function(){
     const btn = this;
     btn.textContent = '正在生成...';
