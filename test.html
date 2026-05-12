@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试中</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 16px;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 100%);
+            min-height: 100vh;
+            font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 32px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f0974a, #e05a2a);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 32px 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .question-number {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 16px;
+        }
+        .question-text {
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        .slider-container {
+            padding: 0 4px;
+        }
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 12px;
+        }
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            background: #f0974a;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(240, 151, 74, 0.4);
+        }
+        .slider-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 8px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #f0974a, #e05a2a);
+            color: #fff;
+        }
+        .nav-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="question-card">
+        <div class="question-number" id="questionNumber"></div>
+        <div class="question-text" id="questionText"></div>
+        
+        <div class="slider-container">
+            <div class="slider-labels">
+                <span>完全不符合</span>
+                <span>完全符合</span>
+            </div>
+            <input type="range" min="1" max="5" value="3" class="slider" id="answerSlider">
+            <div class="slider-values">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn secondary" id="prevBtn" disabled>← 上一题</button>
+        <button class="nav-btn primary" id="nextBtn">下一题 →</button>
+    </div>
+
+    <script src="questions.js"></script>
+    <script>
+        let currentIndex = 0;
+        let answers = new Array(questions.length).fill(3); 
+
+        const questionNumber = document.getElementById('questionNumber');
+        const questionText = document.getElementById('questionText');
+        const answerSlider = document.getElementById('answerSlider');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressFill = document.getElementById('progressFill');
+
+        // ========== 本地存储功能 ==========
+        function saveProgress() {
+            const progress = {
+                answers: answers,
+                currentIndex: currentIndex,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('relationship-lab-progress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('relationship-lab-progress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                return progress;
+            }
+            return null;
+        }
+
+        // 页面加载时自动恢复进度
+        const savedProgress = loadProgress();
+        if (savedProgress) {
+            const shouldRestore = confirm('检测到上次未完成的测试，是否从中断处继续？');
+            if (shouldRestore) {
+                answers = savedProgress.answers;
+                currentIndex = savedProgress.currentIndex;
+            } else {
+                localStorage.removeItem('relationship-lab-progress');
+            }
+        }
+
+        function renderQuestion() {
+            const q = questions[currentIndex];
+            progressFill.style.width = ((currentIndex / questions.length) * 100) + '%';
+            questionNumber.textContent = `第 ${currentIndex + 1} 题 / 共 ${questions.length} 题`;
+            questionText.textContent = q.text;
+            answerSlider.value = answers[currentIndex];
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.textContent = currentIndex === questions.length - 1 ? '查看结果 →' : '下一题 →';
+        }
+
+        // 滑动选择时立即保存
+        answerSlider.addEventListener('input', function() {
+            answers[currentIndex] = parseInt(this.value);
+            saveProgress();
+        });
+
+        // 上一题
+        prevBtn.addEventListener('click', function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+                saveProgress();
+            }
+        });
+
+        // 下一题
+        nextBtn.addEventListener('click', function() {
+            answers[currentIndex] = parseInt(answerSlider.value);
+            saveProgress();
+            
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                // 计算得分前清除临时进度
+                localStorage.removeItem('relationship-lab-progress');
+                
+                let dim1Score = 0;
+                let dim2Score = 0;
+                let dim3Score = 0;
+
+                questions.forEach((q, index) => {
+                    let score = answers[index];
+                    if (q.reverse) {
+                        score = 6 - score;
+                    }
+                    if (q.dimension === 1) dim1Score += score;
+                    else if (q.dimension === 2) dim2Score += score;
+                    else if (q.dimension === 3) dim3Score += score;
+                });
+
+                const resultData = {
+                    dim1: dim1Score,
+                    dim2: dim2Score,
+                    dim3: dim3Score,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('relationship-lab-result', JSON.stringify(resultData));
+
+                const encoded = btoa(`${dim1Score},${dim2Score},${dim3Score}`);
+                window.location.href = `result.html?scores=${encoded}`;
+            }
+        });
+
+        // 初始渲染
+        renderQuestion();
+    </script>
+</body>
+</html>
