@@ -185,6 +185,9 @@ if (!scores) {
     var shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
     var resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/test.html?partner=' + shareEncoded;
     var qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3 + ',' + scores.dim4);
+if (partnerData) {
+    qrUrl += '&partner=' + new URLSearchParams(window.location.search).get('partner');
+}
     new QRCode(document.getElementById("qrcode"), {text: qrUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M});
 
     document.getElementById('shareBtn').addEventListener('click', function(){

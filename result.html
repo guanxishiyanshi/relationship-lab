@@ -151,9 +151,7 @@ if (!scores) {
     var shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3;
     var shareEncoded = btoa(unescape(encodeURIComponent(shareData)));
     var resultUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=' + shareEncoded;
-    var qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3);
-    new QRCode(document.getElementById("qrcode"),{text:qrUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
-
+    var qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/result.html?scores=' + btoa(scores.dim1 + ',' + scores.dim2 + ',' + scores.dim3);    new QRCode(document.getElementById("qrcode"),{text:qrUrl,width:80,height:80,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
     document.getElementById('shareBtn').addEventListener('click',function(){
         var btn=this; btn.textContent='正在生成...'; btn.disabled=true;
         html2canvas(document.querySelector('.container'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(function(canvas){
