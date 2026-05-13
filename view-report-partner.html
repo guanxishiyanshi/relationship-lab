@@ -9,7 +9,6 @@
         body { margin:0; padding:20px; background:linear-gradient(135deg,#1a0a28 0%,#2a1a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
         .container { max-width:700px; margin:0 auto; }
         .card { background:rgba(255,255,255,0.05); border-radius:20px; padding:24px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); }
-        .card-title { font-size:20px; font-weight:700; margin-bottom:16px; color:#e05a8a; }
         .input-group { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
         .input-group input { flex:3; padding:14px 18px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-size:16px; outline:none; }
         .input-group input::placeholder { color:rgba(255,255,255,0.4); }
@@ -19,14 +18,14 @@
         .question-text { font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.5; color:#fff; }
         .answer-badge { display:inline-block; background:rgba(224,90,138,0.2); border-radius:20px; padding:4px 14px; font-size:13px; margin-bottom:12px; }
         .insight { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.8); background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; margin-top:8px; }
-        .btn-unlock { background:rgba(255,255,255,0.1); border:1px solid rgba(224,90,138,0.5); color:#e05a8a; padding:12px; border-radius:12px; cursor:pointer; text-align:center; margin-top:20px; font-weight:600; }
-        .btn-unlock:hover { background:rgba(224,90,138,0.15); }
-        .loading { text-align:center; padding:60px 0; color:rgba(255,255,255,0.6); }
-        .error { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:12px; padding:16px; text-align:center; }
-        .preview-note { background:rgba(224,90,138,0.15); border-radius:12px; padding:12px; text-align:center; font-size:13px; margin-top:16px; }
-        .copy-btn { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:6px 14px; font-size:13px; color:#e05a8a; cursor:pointer; transition:0.2s; }
-        .copy-btn:hover { background:rgba(224,90,138,0.4); }
+        .copy-btn { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:6px 14px; font-size:13px; color:#e05a8a; cursor:pointer; }
         .flex-between { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+        .xhs-card { background:rgba(224,90,138,0.08); border-radius:16px; padding:16px; margin:20px 0 0; text-align:center; border:1px solid rgba(224,90,138,0.3); }
+        .btn-xhs { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:8px 20px; font-size:14px; color:#e05a8a; cursor:pointer; margin-top:10px; display:inline-block; }
+        .summary-card { background:rgba(224,90,138,0.08); border-left:4px solid #e05a8a; }
+        .summary-title { font-size:20px; font-weight:700; margin-bottom:12px; color:#e05a8a; }
+        .summary-text { font-size:15px; line-height:1.75; color:rgba(255,255,255,0.9); }
+        .loading { text-align:center; padding:60px 0; color:rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
@@ -35,18 +34,16 @@
         <div style="font-size:36px; margin-bottom:8px;">🌸</div>
         <h1 style="margin:0 0 8px 0;">逐题深度解读 · 爱的接收模式</h1>
         <p style="color:rgba(255,255,255,0.6); margin-bottom:24px;">输入你的报告编号，查看每道题的个性化分析</p>
-        
         <div class="input-group">
-            <input type="text" id="reportCode" placeholder="例如: PRT-XXXX" value="PRT-RSPL">
+            <input type="text" id="reportCode" placeholder="例如: PRT-XXXX">
             <button id="searchBtn">🔍 查询报告</button>
         </div>
     </div>
-
     <div id="resultArea"></div>
 </div>
 
 <script>
-// 女生版题目库（与 questions-partner.js 保持一致）
+// ========== 女生版题目库（40题） ==========
 const PARTNER_QUESTIONS = [
     { id: 1, text: "我们之间突然安静下来，我第一反应是：是不是我又做错什么了。", dimension: 1 },
     { id: 2, text: "我能感觉到，他有时候不说话，是在心里组织语言，不是在对我冷暴力。", dimension: 1 },
@@ -90,34 +87,92 @@ const PARTNER_QUESTIONS = [
     { id: 40, text: "上次闹别扭，最后是谁先破的冰？——这种事在我们之间发生的次数，记不清了。", dimension: 4 }
 ];
 
-// 根据分数生成解读（女生版）
-function getInsight(score, dimension, text) {
+// ========== 每题解读（根据分数） ==========
+function getInsight(score, dimension) {
     if (score >= 4) {
-        if (dimension === 1) return "🔴 你选择了「非常符合」或「符合」。这说明你很容易把他的沉默解读为针对自己的信号，这可能让你在关系中常常感到不安。下一次他安静时，试着先对自己说：“这不一定是我的问题，他可能只是累了。”";
-        if (dimension === 2) return "🔴 你选择了「非常符合」或「符合」。这说明你的需求表达常常是“加密”的，你嘴上说没事，心里希望他能自己发现。但他的解码器可能真的收不到这个信号。下次试着把“没事”换成“我有点不开心，等我一下好吗？”";
-        if (dimension === 3) return "🔴 你选择了「非常符合」或「符合」。这说明你对爱的感知方式比较固定，只有特定形式的爱你才能收到。可以试着写下来你最喜欢被爱的方式，然后告诉他，这不是在教他，是在帮他更好地爱你。";
-        if (dimension === 4) return "🔴 你选择了「非常符合」或「符合」。这说明你在冲突后需要完整的仪式才能感到安全。下次可以直接告诉他：“我需要一个明确的信号知道我们和好了，比如你牵一下我的手。”";
-        return "🔴 你选择了较高的分数，这说明这个描述对你来说比较符合。可以留意一下这个模式，它是你可以开始调整的地方。";
+        if (dimension === 1) return "🔴 你选择了「符合」。这说明你很容易把他的沉默解读为针对自己的信号，这可能让你在关系中常常感到不安。下一次他安静时，试着先对自己说：“这不一定是我的问题，他可能只是累了。”";
+        if (dimension === 2) return "🔴 你选择了「符合」。这说明你的需求表达常常是“加密”的，你嘴上说没事，心里希望他能自己发现。但他的解码器可能真的收不到这个信号。下次试着把“没事”换成“我有点不开心，等我一下好吗？”";
+        if (dimension === 3) return "🔴 你选择了「符合」。这说明你对爱的感知方式比较固定，只有特定形式的爱你才能收到。可以试着写下来你最喜欢被爱的方式，然后告诉他。";
+        if (dimension === 4) return "🔴 你选择了「符合」。这说明你在冲突后需要完整的仪式才能感到安全。下次可以直接告诉他：“我需要一个明确的信号知道我们和好了，比如你牵一下我的手。”";
+        return "🔴 这个模式值得你关注，它是你可以开始调整的地方。";
     } else if (score <= 2) {
-        if (dimension === 1) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你不太会把他的沉默当成压力，能够给他留出空间。这份松弛感正是很多女生羡慕的能力。";
-        if (dimension === 2) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你能比较直接地表达自己的需求，这种清晰度能极大降低沟通成本，是你在关系中的核心优势。";
-        if (dimension === 3) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你的爱意接收器很灵活，能从多种行为中解读出爱。这份能力让你在关系中更容易感到满足。";
-        if (dimension === 4) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你在冲突后恢复得比较快，有自己独立的修复方式，这是很宝贵的能力。";
-        return "🟢 你选择了较低的分数，这说明这个描述对你来说不太符合，你已经在这方面做得不错了。";
+        if (dimension === 1) return "🟢 你选择了「不符合」。这说明你不太会把他的沉默当成压力，能够给他留出空间。这份松弛感正是很多女生羡慕的能力。";
+        if (dimension === 2) return "🟢 你选择了「不符合」。这说明你能比较直接地表达自己的需求，这种清晰度能极大降低沟通成本，是你在关系中的核心优势。";
+        if (dimension === 3) return "🟢 你选择了「不符合」。这说明你的爱意接收器很灵活，能从多种行为中解读出爱。这份能力让你在关系中更容易感到满足。";
+        if (dimension === 4) return "🟢 你选择了「不符合」。这说明你在冲突后恢复得比较快，有自己独立的修复方式，这是很宝贵的能力。";
+        return "🟢 你已经在这方面做得不错了，继续保持。";
     } else {
         if (dimension === 1) return "🟡 你选择了中间分数。这说明你有时能分辨沉默的类型，有时会多想。这是大多数人的状态，你可以通过给自己10分钟的缓冲来减少焦虑。";
         if (dimension === 2) return "🟡 你选择了中间分数。这说明你多数时候能说清需求，但压力下还是会绕弯子。你可以从小事开始练习直接表达。";
         if (dimension === 3) return "🟡 你选择了中间分数。这说明你能从多种方式感知爱，但有自己的偏好。你可以和他一起做“爱的语言”小练习。";
         if (dimension === 4) return "🟡 你选择了中间分数。这说明你能接受不同的修复节奏，但有时会等得太久。可以和他约定一个和好的小仪式。";
-        return "🟡 你选择了中间分数。这说明这个描述对你来说部分符合，部分不符合。你可以根据自己的感受，决定是否需要调整。";
+        return "🟡 这个描述对你来说部分符合，部分不符合。你可以根据自己的感受，决定是否需要调整。";
     }
+}
+
+// ========== 女生版6种画像的深度总结（500字左右） ==========
+function getSummary(personality, dim1, dim2, dim3, dim4) {
+    const summaries = {
+        '疲惫的双面镜': `你总是替他说了所有他没说的话。这不是你天生就这样的，是你太怕冷场、太怕误会、太怕两个人之间隔着什么东西。于是你学会了抢答——他还没开口，你已经在心里替他组织好了语言；他还没行动，你已经在想象他会怎么做了。
+\n
+你像一个同时扮演两个角色的演员。久而久之，你替他说的话，反而盖住了你自己的声音。你会累，不是因为爱太多了，是因为你一个人扛了两个人的沟通。这种累不是一天形成的，是每一次“算了，我先开口吧”积累下来的。
+\n
+你可能会问：“我不开口，难道等他吗？他永远不会先说的。”我理解你的无奈。但我想邀请你做一个小实验：下一次吵架后，不急着破冰，给自己留一个下午，看看他会不会主动走向你。哪怕他走得慢、哪怕他笨拙，只要他迈出了那一步，你就知道——他不是不想，是他需要一点时间。
+\n
+你不用永远做那个举火把的人。你也可以偶尔站在黑暗里，等他来找你。`,
+        
+        '等待的信号灯': `你需要明确的承诺才能感到安心。这没有错。你不是作，也不是要求多，你只是需要一束确定的信号，才能把心里那盏灯点亮。
+\n
+你可能等过太多次。等他的消息、等他下班、等他想起来问你今天怎么样。很多次你等到心灰意冷，等到自己告诉自己“算了，不期待了”。但下一次，你还是会等。因为你不是在等他这个人，你是在等一个“确定”——确定他还想在一起，确定你们的方向没有偏。
+\n
+你的困局在于：你习惯用“等待”来表达爱，而他用“沉默”来表达爱。你们都在用自己的方式说“我在乎”，但谁都没有收到对方的信号。
+\n
+你可以换一种方式：不坐在那里等，而是走过去，平静地告诉他：“我需要你告诉我，我们还在一起。”这不是示弱，这是在教他怎么爱你。如果他连这个都不愿意给，那你要等的人，可能真的不在这个站台。`,
+        
+        '焦虑的独行者': `你一个人什么都可以，但希望有人让你不用这样。这句话可能是你最真实的写照。
+\n
+你独立、能干、不轻易开口求助。你看上去什么都不需要，但只有你知道，你有多希望有人能看穿你的“没事”，然后抱你一下。你不是不想要，你是不敢要。因为曾经要过，也被拒绝过；曾经期待过，也失望过。于是你学会了不期待。
+\n
+但你知道吗？你的独立是一面盾牌，它保护了你，也挡住了别人靠近你的路。他可能真的不知道你需要什么，因为你的信号太微弱了——你说“没事”的时候，他真的以为没事。
+\n
+你可以试着做一件危险的事：在你最需要的时候，说一次“我需要你”。哪怕声音很小，哪怕只说给他一个人听。不需要每次都这样，只需要一次。你会发现，说出来之后的恐惧，比憋在心里轻松多了。`,
+        
+        '感知失调者': `你知道他爱你，但你感受不到。这可能是最折磨人的状态——理智上你什么都懂，但心里就是收不到信号。
+\n
+他努力工作、不乱花钱、不出轨、不惹你生气。所有人都说他是个好男人。你也知道他是个好男人。但你心里有一个空洞，好像这些“好”都没能填进去。你需要的不是他说“我爱你”，你需要的是他停下来，看着你的眼睛，认真听你讲完一件小事。
+\n
+你不是挑剔，你是“爱的接收器”被设置在了特定频道。你只对某些频率敏感——可能是陪伴，可能是言语，可能是肢体接触。他一直在另一个频道发射信号，所以你收不到。
+\n
+你可以做一件事：写下来你最容易被爱打动的那三件事（比如“每天出门前拥抱10秒”），然后告诉他。不是抱怨，是教他。他不是不爱你，他只是在用他不会的方式爱你。`,
+        
+        '冷静的船锚': `你是关系里最稳定的那个人。你能接住他的情绪，也能等得起修复。你不太会因为他的沉默而崩溃，也不太会因为一次争吵就怀疑整段关系。
+\n
+这是非常宝贵的定力。很多关系散掉，不是因为不爱，是因为两个人都太慌了。而你是那个不慌的人。
+\n
+但我想提醒你一件事：因为你太稳了，有时候他会误以为你不需要他。你不哭不闹不追问，他以为你一切都好。而你只是不想让他担心，或者觉得“说了也没用”。
+\n
+稳不是错，但偶尔也可以不稳一下。下一次你累了，不用自己扛着，试着跟他说：“我今天很累，你来照顾我一下。”你会发现，他其实很愿意被你需要。你需要做的不是一直当锚，而是偶尔也做那艘被锚定住的船。`,
+        
+        '矛盾探索者': `你不是不想，是不知道该怎么办。这是你现在最真实的状态。你不是不爱，也不是不努力，你只是在“怕做错”和“想靠近”之间反复拉扯。
+\n
+你有时候能读懂他的沉默，有时候会多想；有时候能直接说出需求，有时候会咽回去；有时候觉得被爱，有时候觉得什么都没有。这种矛盾让你很累，因为你自己都不知道下一秒会怎么反应。
+\n
+但我想告诉你：这个阶段本身就是改变的一部分。你不会从一个不会游泳的人突然变成救生员。你会先呛水、会慌乱、会想上岸。你现在就在这个“呛水”的阶段。
+\n
+你可以先做一件事：不再要求自己“立刻做对”。允许自己笨拙，允许自己有时候说错话。下次不确定的时候，就直接说：“我现在不太确定自己是怎么想的，但我愿意和你一起想。”这句话本身，就已经是很好的连接了。`,
+        
+        '探索者': `你的画像还没有完全定型，这意味着你还在成长和变化的路上。
+\n
+关系中没有标准答案，也没有完美的爱的接收模式。重要的是你愿意停下来，看自己——你习惯怎么解读他的沉默、怎么表达自己的需求、怎么感知爱、怎么修复冲突。
+\n
+你已经迈出了最重要的一步。接下来，你可以从一个小动作开始：下次不确定的时候，不急着下结论，先问自己一句：“我的感受是什么？我真正需要的是什么？”看见，就是改变的开始。`
+    };
+    
+    return summaries[personality] || summaries['矛盾探索者'];
 }
 
 const SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
-
-let currentData = null;
-let isUnlocked = false;
 
 async function fetchReport(code) {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/answers?code=eq.${encodeURIComponent(code)}`, {
@@ -128,112 +183,81 @@ async function fetchReport(code) {
     return data[0];
 }
 
-function renderQuestions(answers, maxShow = null) {
-    const total = PARTNER_QUESTIONS.length;
-    const showCount = maxShow ? Math.min(maxShow, total) : total;
+function renderQuestions(answers) {
     let html = '';
-    for (let i = 0; i < showCount; i++) {
+    for (let i = 0; i < PARTNER_QUESTIONS.length; i++) {
         const q = PARTNER_QUESTIONS[i];
         const answer = answers[i] || 3;
-        const insight = getInsight(answer, q.dimension, q.text);
-        html += `
-            <div class="question-block">
-                <div class="question-text">${q.id}. ${q.text}</div>
-                <div class="answer-badge">你的答案：${answer} / 5（${answer === 1 ? '完全不符合' : answer === 2 ? '不太符合' : answer === 3 ? '中等' : answer === 4 ? '比较符合' : '完全符合'}）</div>
-                <div class="insight">${insight}</div>
-            </div>
-        `;
+        const insight = getInsight(answer, q.dimension);
+        html += `<div class="question-block">
+            <div class="question-text">${q.id}. ${q.text}</div>
+            <div class="answer-badge">你的答案：${answer} / 5（${answer === 1 ? '完全不符合' : answer === 2 ? '不太符合' : answer === 3 ? '中等' : answer === 4 ? '比较符合' : '完全符合'}）</div>
+            <div class="insight">${insight}</div>
+        </div>`;
     }
     return html;
 }
 
 document.getElementById('searchBtn').addEventListener('click', async () => {
     const code = document.getElementById('reportCode').value.trim().toUpperCase();
-    if (!code) {
-        document.getElementById('resultArea').innerHTML = '<div class="card error">请输入报告编号</div>';
-        return;
-    }
+    if (!code) { document.getElementById('resultArea').innerHTML = '<div class="card">请输入报告编号</div>'; return; }
     
     document.getElementById('resultArea').innerHTML = '<div class="card loading">⏳ 正在查询报告...</div>';
-    
     const data = await fetchReport(code);
-    if (!data) {
-        document.getElementById('resultArea').innerHTML = '<div class="card error">❌ 未找到报告，请检查编号是否正确</div>';
-        return;
-    }
+    if (!data) { document.getElementById('resultArea').innerHTML = '<div class="card">❌ 未找到报告，请检查编号</div>'; return; }
     
-    currentData = data;
     const answers = data.answers_json || [];
     const personality = data.personality || '探索者';
+    const dim1 = data.dim1 || 0, dim2 = data.dim2 || 0, dim3 = data.dim3 || 0, dim4 = data.dim4 || 0;
     
-    let html = `
-        <div class="card">
-            <div class="tag" style="margin-bottom:8px;">${personality}</div>
-            <div class="flex-between">
-                <div style="font-size:22px; font-weight:700;">📖 逐题深度解读 · 爱的接收模式</div>
-                <button class="copy-btn" id="copyCodeBtn">📋 复制编号 ${code}</button>
-            </div>
-            <div style="color:rgba(255,255,255,0.5); margin:8px 0 16px;">编号：${code}</div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
-                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">沉默解读 ${data.dim1}/50</span>
-                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">需求表达 ${data.dim2}/50</span>
-                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">爱意感知 ${data.dim3}/50</span>
-                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">冲突修复 ${data.dim4}/50</span>
-            </div>
-    `;
-    
-    // 检查是否是付费解锁
-    const urlParams = new URLSearchParams(window.location.search);
-    const paid = urlParams.get('unlock') === 'paid' || isUnlocked;
-    
-    if (paid) {
-        html += renderQuestions(answers, null);
-        html += `<div style="margin-top:20px; padding:16px; background:rgba(76,175,80,0.1); border-radius:16px; text-align:center;">
-            ✅ 感谢支持！你已经解锁全部40道题的深度解读。
+    let html = `<div class="card">
+        <div class="tag" style="margin-bottom:8px;">${personality}</div>
+        <div class="flex-between">
+            <div style="font-size:22px; font-weight:700;">📖 逐题深度解读 · 爱的接收模式</div>
+            <button class="copy-btn" id="copyCodeBtn">📋 复制编号 ${code}</button>
+        </div>
+        <div style="color:rgba(255,255,255,0.5); margin:8px 0 16px;">编号：${code}</div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+            <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">沉默解读 ${dim1}/50</span>
+            <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">需求表达 ${dim2}/50</span>
+            <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">爱意感知 ${dim3}/50</span>
+            <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">冲突修复 ${dim4}/50</span>
         </div>`;
-    } else {
-        // 只显示前3题作为预览
-        html += renderQuestions(answers, 3);
-        html += `
-            <div class="preview-note">
-                🔒 以上是前3题预览。完整版包含<b>全部40道题的逐题分析</b> + 专属行动指南。
-            </div>
-            <div class="btn-unlock" id="unlockBtn">
-                🔓 输入解锁码，查看完整逐题解读
-            </div>
-        `;
-    }
+    
+    html += renderQuestions(answers);
+    
+    // 深度总结（500字）
+    const summary = getSummary(personality, dim1, dim2, dim3, dim4);
+    html += `<div class="card summary-card">
+        <div class="summary-title">📝 给你的深度总结</div>
+        <div class="summary-text">${summary.replace(/\n/g, '<br>')}</div>
+    </div>`;
+    
+    // 小红书求关注
+    html += `<div class="xhs-card">
+        <div style="font-size:24px; margin-bottom:8px;">📕</div>
+        <div style="font-weight:600;">如果这份报告对你有帮助</div>
+        <div style="font-size:14px; margin:8px 0;">欢迎关注小红书 <b style="color:#e05a8a;">@关系实验室</b></div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.5);">小红书号：9165138712</div>
+        <button class="btn-xhs" id="followXHSBtn">📋 复制编号，打开小红书</button>
+    </div>`;
     
     html += `</div>`;
     document.getElementById('resultArea').innerHTML = html;
     
-    // 绑定复制按钮
-    const copyBtn = document.getElementById('copyCodeBtn');
-    if (copyBtn) {
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(code);
-            alert('✅ 报告编号已复制：' + code + '\n\n可以分享给伴侣或朋友查看。');
-        });
-    }
-    
-    if (!paid && document.getElementById('unlockBtn')) {
-        document.getElementById('unlockBtn').addEventListener('click', () => {
-            const codeInput = prompt('请输入解锁码（付费后获得）\n\n解锁码获取方式：微信支付9.9元后，联系 wotule_nilongme@163.com 获取');
-            if (codeInput === '2025') {
-                isUnlocked = true;
-                document.getElementById('searchBtn').click();
-            } else if (codeInput !== null) {
-                alert('解锁码错误，请确认后重新输入');
-            }
-        });
-    }
+    document.getElementById('copyCodeBtn')?.addEventListener('click', () => {
+        navigator.clipboard.writeText(code);
+        alert('✅ 报告编号已复制：' + code);
+    });
+    document.getElementById('followXHSBtn')?.addEventListener('click', () => {
+        navigator.clipboard.writeText(code);
+        alert('✅ 报告编号已复制\n\n请打开小红书，关注 @关系实验室\n小红书号：9165138712');
+        window.open('https://www.xiaohongshu.com/user/profile/9165138712', '_blank');
+    });
 });
 
-// 自动加载默认编号（如果URL中有code参数）
 const urlCode = new URLSearchParams(window.location.search).get('code');
-if (urlCode) {
-    document.getElementById('reportCode').value = urlCode;
-}
+if (urlCode) document.getElementById('reportCode').value = urlCode;
 document.getElementById('searchBtn').click();
 </script>
 </body>

@@ -8,25 +8,21 @@
         body { margin:0; padding:16px; background:linear-gradient(135deg,#1a0a28 0%,#2a1a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
         .container { max-width:420px; margin:0 auto; padding-bottom:40px; }
         .card { background:rgba(255,255,255,0.05); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
-        .card-title { font-size:18px; font-weight:700; margin-bottom:12px; color:#e05a8a; letter-spacing:-0.3px; }
+        .card-title { font-size:18px; font-weight:700; margin-bottom:12px; color:#e05a8a; }
         .card-text { font-size:15px; line-height:1.65; color:rgba(255,255,255,0.85); }
         .highlight-card { border:2px solid rgba(224,90,138,0.5); background:rgba(224,90,138,0.08); }
         .tag { display:inline-block; background:linear-gradient(135deg,#e05a8a,#c04a6a); padding:8px 24px; border-radius:100px; font-size:14px; font-weight:600; margin-bottom:16px; }
         h1 { font-size:28px; margin-bottom:8px; }
         .subtitle { font-size:14px; color:rgba(255,255,255,0.5); margin-bottom:24px; }
         .btn { display:block; width:100%; padding:16px; border-radius:12px; border:none; font-size:18px; font-weight:600; cursor:pointer; text-align:center; margin-top:24px; background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; }
+        .btn-copy { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:10px 16px; font-size:14px; color:#e05a8a; cursor:pointer; margin-top:12px; width:100%; }
         .loading { text-align:center; padding:60px 0; font-size:18px; color:rgba(255,255,255,0.6); }
-        .insight-quote { font-style:italic; border-left:3px solid #e05a8a; padding-left:16px; margin:16px 0; color:rgba(255,255,255,0.7); }
-        .tip-badge { background:rgba(224,90,138,0.2); border-radius:20px; padding:4px 12px; font-size:12px; display:inline-block; margin-bottom:8px; }
-        ul, ol { padding-left:20px; margin:8px 0; }
-        li { margin:8px 0; line-height:1.5; }
         .code-input-group { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
         .code-input-group input { flex:2; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-size:14px; outline:none; }
-        .code-input-group input::placeholder { color:rgba(255,255,255,0.4); }
         .code-input-group button { flex:1; padding:12px; border-radius:12px; border:none; background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
-        .copy-btn { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:6px 14px; font-size:13px; color:#e05a8a; cursor:pointer; transition:0.2s; display:inline-block; margin-left:12px; }
-        .copy-btn:hover { background:rgba(224,90,138,0.4); }
+        .copy-btn { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:6px 14px; font-size:13px; color:#e05a8a; cursor:pointer; display:inline-block; margin-left:12px; }
         .flex-between { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+        .xhs-card { background:rgba(224,90,138,0.1); border-radius:16px; padding:16px; margin:16px 0; text-align:center; }
     </style>
 </head>
 <body>
@@ -35,181 +31,148 @@
 </div>
 
 <script>
-(function(){
+const SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+
+(async function() {
     var params = new URLSearchParams(window.location.search);
     var code = params.get('code');
     var isPaid = (params.get('unlock') === 'paid');
 
     if (!code) {
-        document.getElementById('report').innerHTML = '<h1>🔒 未找到报告编号</h1><p>请从测试结果页扫码进入。</p>';
+        document.getElementById('report').innerHTML = '<div class="card"><h2>🔒 未找到报告编号</h2><p>请从测试结果页进入。</p></div>';
         return;
     }
 
-    var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
-    var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+    let answersArray = null;
+    let dim1 = 0, dim2 = 0, dim3 = 0, dim4 = 0, personality = '探索者';
 
-    fetch(SUPABASE_URL + '/rest/v1/answers?code=eq.' + encodeURIComponent(code), {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (!data || data.length === 0) {
-            document.getElementById('report').innerHTML = '<h1>🔒 未找到报告</h1><p>编号可能已过期，请重新测试。<br><br>💡 提示：如果你刚刚支付完成，请等待24小时内邮件通知。</p>';
-            return;
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/answers?code=eq.${encodeURIComponent(code)}`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        });
+        const data = await response.json();
+        if (data && data.length > 0) {
+            answersArray = data[0].answers_json;
+            dim1 = data[0].dim1 || 0;
+            dim2 = data[0].dim2 || 0;
+            dim3 = data[0].dim3 || 0;
+            dim4 = data[0].dim4 || 0;
+            personality = data[0].personality || '探索者';
+            console.log('✅ 从 Supabase 读取成功');
         }
-        var d = data[0];
-        var answers = d.answers_json || [];
-        var personality = d.personality || '探索者';
-        
-        // 构建完整 HTML
-        var html = '';
-        html += '<div class="tag" style="margin-bottom:8px;">' + personality + '</div>';
-        html += '<div class="flex-between">';
-        html += '<h1 style="margin:0;">📖 完整深度报告</h1>';
-        html += '<button class="copy-btn" id="copyCodeBtn">📋 复制编号 ' + code + '</button>';
-        html += '</div>';
-        html += '<div class="subtitle">编号：' + code + ' · 报告生成时间：' + new Date().toLocaleString() + '</div>';
-        
-        // ========== 解锁状态提示 ==========
-        if (isPaid) {
-            html += '<div class="card highlight-card" style="background:rgba(76,175,80,0.1); border-color:#4caf50;">';
-            html += '<div class="card-title" style="color:#4caf50;">✅ 感谢支持 · 已解锁完整版</div>';
-            html += '<div class="card-text">你已经解锁全部深度解读，以下内容为完整报告。</div>';
-            html += '</div>';
-        }
-        
-        // ========== 1. 得分总览 ==========
-        html += '<div class="card"><div class="card-title">📊 你的四维度得分</div><div class="card-text">';
-        html += '<b>🔹 维度一 · 对他沉默的解读：</b>' + d.dim1 + '/50<br>';
-        html += '<b>🔹 维度二 · 表达需求的清晰度：</b>' + d.dim2 + '/50<br>';
-        html += '<b>🔹 维度三 · 对"被爱"的感知：</b>' + d.dim3 + '/50<br>';
-        html += '<b>🔹 维度四 · 冲突后的修复：</b>' + d.dim4 + '/50';
-        html += '</div></div>';
-        
-        // ========== 2. 题目得分分析 ==========
-        if (answers.length > 0) {
-            var maxScore = Math.max.apply(null, answers);
-            var minScore = Math.min.apply(null, answers);
-            var maxQuestions = [];
-            var minQuestions = [];
-            for (var i = 0; i < answers.length; i++) {
-                if (answers[i] === maxScore) maxQuestions.push(i + 1);
-                if (answers[i] === minScore) minQuestions.push(i + 1);
+    } catch(e) { console.error(e); }
+
+    if (!answersArray || answersArray.length === 0) {
+        try {
+            var savedProgress = localStorage.getItem('partner-lab-progress');
+            if (savedProgress) {
+                answersArray = JSON.parse(savedProgress).answers;
             }
-            html += '<div class="card highlight-card"><div class="card-title">🔍 最需要关注的题目（得分较高）</div><div class="card-text">';
-            html += '<span class="tip-badge">⚠️ 压力信号</span>';
-            html += '<p>你在第 <b>' + maxQuestions.join('、') + '</b> 题上的得分是 <b>' + maxScore + '/5</b>，这些题目指向你关系中<br><b>最常见的困扰模式</b>，也是你可以优先调整的地方。</p>';
-            html += '</div></div>';
-            
-            html += '<div class="card highlight-card"><div class="card-title">💪 已经做得不错的方面（得分较低）</div><div class="card-text">';
-            html += '<span class="tip-badge">✅ 优势资产</span>';
-            html += '<p>你在第 <b>' + minQuestions.join('、') + '</b> 题上的得分是 <b>' + minScore + '/5</b>，这些题目中你表现出较强的适应力，说明你在这些方面<br><b>已经具备健康的情感能力</b>，可以继续巩固。</p>';
-            html += '</div></div>';
-        }
-        
-        // ========== 3. 深度心理解读 ==========
-        html += '<div class="card"><div class="card-title">🧠 深度心理解读</div><div class="card-text">';
-        html += '<p>你的测试结果揭示了你在亲密关系中 <b>“接收与表达爱的方式”</b>。</p>';
-        html += '<p><b>📌 沉默解读</b>：' + (d.dim1 >= 38 ? '你对他的沉默比较敏感，容易把安静解读为疏远。' : (d.dim1 <= 20 ? '你能理性看待他的沉默，给他留出空间。' : '你有时会多想，有时能放松。')) + '</p>';
-        html += '<p><b>📌 需求表达</b>：' + (d.dim2 >= 38 ? '你的表达常需要被“翻译”，习惯用暗示或沉默。' : (d.dim2 <= 20 ? '你能直接表达需求，沟通成本很低。' : '你多数时候能说清，但压力下会绕弯子。')) + '</p>';
-        html += '<p><b>📌 爱意感知</b>：' + (d.dim3 >= 38 ? '你对爱的接收方式比较特定，需要固定信号。' : (d.dim3 <= 20 ? '你的爱意接收器很灵活，能从多种行为中感知爱。' : '你能从多种方式感知爱，但有自己偏好。')) + '</p>';
-        html += '<p><b>📌 冲突修复</b>：' + (d.dim4 >= 38 ? '你需要完整的和好仪式才能感到安全。' : (d.dim4 <= 20 ? '你的修复方式比较独立，不需要依赖对方先开口。' : '你能接受不同的修复节奏，但有时会等太久。')) + '</p>';
-        html += '<div class="insight-quote">无论你的得分如何，这份报告的目的不是给你贴标签，而是帮你看见自己。你已经走得比大多数人远了。</div>';
-        html += '</div></div>';
-        
-        // ========== 4. 专属行动建议 ==========
-        html += '<div class="card"><div class="card-title">🚀 3 条可立刻行动的建议</div><div class="card-text">';
-        html += '<ol><li><b>建立“沉默信号”约定</b>：告诉他“如果你只是需要安静，可以说‘我想自己待半小时’，我就不打扰你。”</li>';
-        html += '<li><b>把“抱怨”换成“请求”</b>：下次想说“你从来不”时，换成“我需要你帮忙……”，指向解决而不是指责。</li>';
-        html += '<li><b>开启“爱的语言”对话</b>：各自写下三种“什么行为让你感觉被爱”，交换看，减少频道差。</li></ol>';
-        html += '</div></div>';
-        
-        // ========== 5. 逐题解读入口（输入编号跳转新页面）==========
-        html += '<div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6); background:rgba(224,90,138,0.08);">';
-        html += '<div class="card-title" style="color:#e05a8a;">📝 查看每道题的逐题解读</div>';
-        html += '<div class="card-text" style="margin-bottom:12px;">';
-        html += '想看每一道题<strong>你选了哪个答案、为什么、怎么调整</strong>？<br>';
-        html += '输入你的报告编号，进入逐题解读页面。';
-        html += '</div>';
-        html += '<div class="code-input-group">';
-        html += '<input type="text" id="inputReportCode" placeholder="例如: ' + code + '" value="' + code + '">';
-        html += '<button id="gotoViewReportBtn">📖 进入逐题解读 →</button>';
-        html += '</div>';
-        html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">';
-        html += '逐题解读页面会显示每道题的原文、你的答案和个性化分析。<br>';
-        html += (isPaid ? '✅ 你已付费，进入后可直接查看全部40道题。' : '🔒 未付费用户只能看到前3题预览，付费后输入解锁码可查看全部。');
-        html += '</p>';
-        html += '</div>';
-        
-        // ========== 6. 付费状态处理 ==========
-        if (!isPaid) {
-            html += '<div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6); background:rgba(224,90,138,0.08);">';
-            html += '<div class="card-title" style="color:#e05a8a;">🔓 解锁完整逐题解读</div>';
-            html += '<div class="card-text" style="margin-bottom:12px;">当前显示摘要版。<br>完整版包含<b>40道题的详细分析</b> + 个性化行动指南（约3500字）。</div>';
-            html += '<button class="btn" id="unlockBtn">9.9元 · 解锁完整报告 →</button>';
-            html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">微信支付后发送邮件，24小时内发送完整版</p>';
-            html += '</div>';
-        } else {
-            html += '<div class="card highlight-card" style="background:rgba(76,175,80,0.05);">';
-            html += '<div class="card-title" style="color:#4caf50;">📬 获取完整逐题解读（Word版）</div>';
-            html += '<div class="card-text">你已经完成了付费，完整的 <b>40道逐题详细分析</b> 会通过邮件发送给你。<br><br>';
-            html += '<b>请发送邮件到：wotule_nilongme@163.com</b><br>';
-            html += '邮件标题：【已付费+' + code + '】<br>';
-            html += '邮件内容：你的微信昵称 + 报告编号 ' + code + '<br><br>';
-            html += '我会在<b>24小时内</b>将完整版（Word/PDF）发送给你。<br><br>';
-            html += '每一次付费，都是这个“关系实验室”能继续做下去的动力。谢谢你愿意为你们的连接花这笔钱。❤️';
-            html += '</div></div>';
-        }
-        
-        // 免责声明
-        html += '<div class="card" style="text-align:center; background:rgba(255,255,255,0.02);">';
-        html += '<div class="card-text" style="font-size:12px; color:rgba(255,255,255,0.4);">';
-        html += '⚠️ 本报告仅为个人反思工具，不构成心理诊断。<br>';
-        html += '如果你们的关系正在经历严重危机，建议寻求专业伴侣咨询。<br><br>';
-        html += '© 关系实验室 · 我兔了 & 你龙么';
-        html += '</div></div>';
-        
-        document.getElementById('report').innerHTML = html;
-        
-        // ========== 绑定复制按钮 ==========
-        var copyBtn = document.getElementById('copyCodeBtn');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(code);
-                alert('✅ 报告编号已复制：' + code + '\n\n可以分享给伴侣或朋友查看。');
-            });
-        }
-        
-        // ========== 绑定逐题解读跳转按钮 ==========
-        var gotoBtn = document.getElementById('gotoViewReportBtn');
-        if (gotoBtn) {
-            gotoBtn.onclick = function() {
-                var inputCode = document.getElementById('inputReportCode').value.trim().toUpperCase();
-                if (!inputCode) {
-                    alert('请输入报告编号');
-                    return;
-                }
-                var url = 'view-report-partner.html?code=' + inputCode;
-                if (isPaid) {
-                    url += '&unlock=paid';
-                }
-                window.location.href = url;
-            };
-        }
-        
-        // 绑定付费按钮
-        if (!isPaid) {
-            var unlockBtn = document.getElementById('unlockBtn');
-            if (unlockBtn) {
-                unlockBtn.onclick = function() {
-                    alert('📧 请发邮件到：wotule_nilongme@163.com\n\n邮件标题：【解锁报告】' + code + '\n邮件内容：你的微信昵称 + 报告编号 ' + code + '\n\n我会回复你付款方式（微信收款码），支付后24小时内发送完整版逐题解读。\n\n感谢你的信任 ❤️');
-                };
+            var savedResult = localStorage.getItem('partner-lab-result');
+            if (savedResult && !dim1) {
+                var resultData = JSON.parse(savedResult);
+                dim1 = resultData.dim1; dim2 = resultData.dim2; dim3 = resultData.dim3; dim4 = resultData.dim4;
             }
-        }
-    })
-    .catch(function(err) {
-        console.error(err);
-        document.getElementById('report').innerHTML = '<h1>⚠️ 加载失败</h1><p>请检查网络后重试。<br><br>或发邮件到 <b>wotule_nilongme@163.com</b><br>提供你的报告编号 <b>' + (code || '') + '</b>，我会手动发送给你。</p>';
+        } catch(e) {}
+    }
+
+    if (!answersArray || answersArray.length === 0) {
+        document.getElementById('report').innerHTML = `
+            <div class="card" style="text-align:center;">
+                <h2>⚠️ 未找到答题数据</h2>
+                <p>报告编号：${code}</p>
+                <p>请重新测试，或联系小红书 @关系实验室</p>
+                <button class="btn" onclick="window.location.href='partner-test.html'">重新测试</button>
+            </div>
+        `;
+        return;
+    }
+
+    var maxScore = Math.max.apply(null, answersArray);
+    var minScore = Math.min.apply(null, answersArray);
+    var maxQuestions = [], minQuestions = [];
+    for (var i = 0; i < answersArray.length; i++) {
+        if (answersArray[i] === maxScore) maxQuestions.push(i + 1);
+        if (answersArray[i] === minScore) minQuestions.push(i + 1);
+    }
+
+    var html = '';
+    html += '<div class="tag" style="margin-bottom:8px;">' + personality + '</div>';
+    html += '<div class="flex-between">';
+    html += '<h1 style="margin:0;">📖 完整深度报告</h1>';
+    html += '<button class="copy-btn" id="copyCodeBtn">📋 复制编号 ' + code + '</button>';
+    html += '</div>';
+    html += '<div class="subtitle">编号：' + code + ' · ' + new Date().toLocaleString() + '</div>';
+    
+    if (isPaid) {
+        html += '<div class="card highlight-card" style="background:rgba(76,175,80,0.1); border-color:#4caf50;">';
+        html += '<div class="card-title" style="color:#4caf50;">✅ 感谢支持 · 已解锁完整版</div></div>';
+    }
+    
+    html += '<div class="card"><div class="card-title">📊 你的四维度得分</div><div class="card-text">';
+    html += '<b>🔹 沉默解读：</b>' + dim1 + '/50<br>';
+    html += '<b>🔹 需求表达：</b>' + dim2 + '/50<br>';
+    html += '<b>🔹 爱意感知：</b>' + dim3 + '/50<br>';
+    html += '<b>🔹 冲突修复：</b>' + dim4 + '/50';
+    html += '</div></div>';
+    
+    html += '<div class="card highlight-card"><div class="card-title">🔍 最需要关注的题目</div><div class="card-text">';
+    html += '<p>第 <b>' + maxQuestions.join('、') + '</b> 题得分 <b>' + maxScore + '/5</b></p></div></div>';
+    
+    html += '<div class="card highlight-card"><div class="card-title">💪 已经做得不错的方面</div><div class="card-text">';
+    html += '<p>第 <b>' + minQuestions.join('、') + '</b> 题得分 <b>' + minScore + '/5</b></p></div></div>';
+    
+    html += '<div class="card"><div class="card-title">🧠 深度心理解读</div><div class="card-text">';
+    html += '<p><b>📌 沉默解读</b>：' + (dim1 >= 38 ? '你对沉默比较敏感' : (dim1 <= 20 ? '你能理性看待沉默' : '你有时会多想')) + '</p>';
+    html += '<p><b>📌 需求表达</b>：' + (dim2 >= 38 ? '表达常需翻译' : (dim2 <= 20 ? '能直接表达需求' : '多数能说清')) + '</p>';
+    html += '<p><b>📌 爱意感知</b>：' + (dim3 >= 38 ? '接收方式较固定' : (dim3 <= 20 ? '接收器很灵活' : '有自己偏好')) + '</p>';
+    html += '<p><b>📌 冲突修复</b>：' + (dim4 >= 38 ? '需要完整仪式' : (dim4 <= 20 ? '修复方式独立' : '能接受不同节奏')) + '</p>';
+    html += '</div></div>';
+    
+    html += '<div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6);">';
+    html += '<div class="card-title" style="color:#e05a8a;">📝 查看每道题的逐题解读</div>';
+    html += '<div class="code-input-group">';
+    html += '<input type="text" id="inputReportCode" value="' + code + '">';
+    html += '<button id="gotoViewReportBtn">📖 进入逐题解读 →</button>';
+    html += '</div></div>';
+    
+    if (!isPaid) {
+        html += '<div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6);">';
+        html += '<div class="card-title" style="color:#e05a8a;">📕 解锁完整逐题解读</div>';
+        html += '<div class="xhs-card">';
+        html += '<div style="font-size:28px;">📕</div>';
+        html += '<div style="font-weight:600;">小红书 <span style="color:#e05a8a;">@关系实验室</span></div>';
+        html += '<div style="font-size:13px;">小红书号：<b>9165138712</b></div>';
+        html += '<div style="font-size:13px; background:rgba(0,0,0,0.3); padding:12px; border-radius:12px; margin-top:12px;">';
+        html += '📝 私信发送：<br>1️⃣ 报告编号：<b>' + code + '</b><br>2️⃣ 你的画像标签<br><br>💰 支付 9.9 元后，24小时内发送完整报告';
+        html += '</div>';
+        html += '<button class="btn-copy" id="copyForXHSBtn">📋 复制报告编号，打开小红书</button>';
+        html += '</div></div>';
+    } else {
+        html += '<div class="card highlight-card"><div class="card-title" style="color:#4caf50;">✅ 已解锁</div>';
+        html += '<div class="card-text">请关注小红书 <b>@关系实验室</b>，私信报告编号获取完整版。<br>小红书号：<b>9165138712</b></div></div>';
+    }
+    
+    html += '<div class="card" style="text-align:center;"><div class="card-text" style="font-size:12px;">⚠️ 本报告仅为个人反思工具<br>© 关系实验室 · 我兔了 & 你龙么</div></div>';
+    
+    document.getElementById('report').innerHTML = html;
+    
+    document.getElementById('copyCodeBtn')?.addEventListener('click', () => {
+        navigator.clipboard.writeText(code);
+        alert('✅ 报告编号已复制：' + code);
+    });
+    
+    document.getElementById('gotoViewReportBtn')?.addEventListener('click', () => {
+        var inputCode = document.getElementById('inputReportCode').value.trim().toUpperCase();
+        if (!inputCode) { alert('请输入报告编号'); return; }
+        window.location.href = 'view-report-partner.html?code=' + inputCode + (isPaid ? '&unlock=paid' : '');
+    });
+    
+    document.getElementById('copyForXHSBtn')?.addEventListener('click', () => {
+        navigator.clipboard.writeText(code);
+        alert('✅ 报告编号已复制：' + code + '\n\n请打开小红书，私信发送给 @关系实验室\n\n小红书号：9165138712');
+        window.open('https://www.xiaohongshu.com/user/profile/9165138712', '_blank');
     });
 })();
 </script>

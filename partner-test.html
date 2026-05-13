@@ -21,6 +21,7 @@
         .nav-btn.primary { background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; }
         .nav-btn.secondary { background:rgba(255,255,255,0.1); color:#fff; }
         .nav-btn:disabled { opacity:0.3; cursor:not-allowed; }
+        .answer-hint { text-align:center; font-size:12px; color:rgba(255,255,255,0.3); margin-top:16px; }
     </style>
 </head>
 <body>
@@ -33,6 +34,7 @@
         <input type="range" min="1" max="5" value="3" class="slider" id="answerSlider">
         <div class="slider-values"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
     </div>
+    <div class="answer-hint" id="answerHint">当前选择：中等</div>
 </div>
 <div class="nav-buttons">
     <button class="nav-btn secondary" id="prevBtn" disabled>← 上一题</button>
@@ -40,28 +42,40 @@
 </div>
 <script src="questions-partner.js"></script>
 <script>
+// ========== 全局变量 ==========
 var currentIndex = 0;
 var answers = new Array(partnerQuestions.length).fill(3);
 var questionNumber = document.getElementById('questionNumber');
 var questionText = document.getElementById('questionText');
 var answerSlider = document.getElementById('answerSlider');
+var answerHint = document.getElementById('answerHint');
 var prevBtn = document.getElementById('prevBtn');
 var nextBtn = document.getElementById('nextBtn');
 var progressFill = document.getElementById('progressFill');
 
+// ========== 保存进度 ==========
 function saveProgress() {
-    var progress = {answers: answers, currentIndex: currentIndex, timestamp: new Date().toISOString()};
+    var progress = {
+        answers: answers,
+        currentIndex: currentIndex,
+        timestamp: new Date().toISOString()
+    };
     localStorage.setItem('partner-lab-progress', JSON.stringify(progress));
+    console.log('💾 女生版进度已保存');
 }
+
+// ========== 加载进度 ==========
 function loadProgress() {
     var saved = localStorage.getItem('partner-lab-progress');
-    if (saved) { return JSON.parse(saved); }
+    if (saved) return JSON.parse(saved);
     return null;
 }
-// 如果是从结果页点"重新测试"过来的，清除旧进度
-if (document.referrer && document.referrer.includes('result.html')) {
-    localStorage.removeItem('relationship-lab-progress');
+
+if (document.referrer && document.referrer.includes('partner-result.html')) {
+    localStorage.removeItem('partner-lab-progress');
+    console.log('🗑️ 从结果页返回，清除旧进度');
 }
+
 var savedProgress = loadProgress();
 if (savedProgress) {
     var shouldRestore = confirm('检测到上次未完成的测试，是否从中断处继续？');
@@ -73,31 +87,57 @@ if (savedProgress) {
     }
 }
 
+function updateHint(value) {
+    var hintText = '';
+    if (value == 1) hintText = '完全不符合';
+    else if (value == 2) hintText = '不太符合';
+    else if (value == 3) hintText = '中等';
+    else if (value == 4) hintText = '比较符合';
+    else if (value == 5) hintText = '完全符合';
+    answerHint.textContent = '当前选择：' + hintText;
+}
+
 function renderQuestion() {
     var q = partnerQuestions[currentIndex];
-    progressFill.style.width = ((currentIndex / partnerQuestions.length) * 100) + '%';
+    var percent = ((currentIndex + 1) / partnerQuestions.length) * 100;
+    progressFill.style.width = percent + '%';
     questionNumber.textContent = '第 ' + (currentIndex + 1) + ' 题 / 共 ' + partnerQuestions.length + ' 题';
     questionText.textContent = q.text;
-    answerSlider.value = answers[currentIndex];
-    prevBtn.disabled = currentIndex === 0;
-    nextBtn.textContent = currentIndex === partnerQuestions.length - 1 ? '查看结果 →' : '下一题 →';
+    
+    var currentAnswer = answers[currentIndex];
+    answerSlider.value = currentAnswer;
+    updateHint(currentAnswer);
+    
+    prevBtn.disabled = (currentIndex === 0);
+    nextBtn.textContent = (currentIndex === partnerQuestions.length - 1) ? '查看结果 →' : '下一题 →';
 }
 
 answerSlider.addEventListener('input', function() {
-    answers[currentIndex] = parseInt(this.value);
+    var newValue = parseInt(this.value);
+    answers[currentIndex] = newValue;
+    updateHint(newValue);
     saveProgress();
 });
+
 prevBtn.addEventListener('click', function() {
-    if (currentIndex > 0) { currentIndex--; renderQuestion(); saveProgress(); }
+    if (currentIndex > 0) {
+        answers[currentIndex] = parseInt(answerSlider.value);
+        saveProgress();
+        currentIndex--;
+        renderQuestion();
+    }
 });
+
 nextBtn.addEventListener('click', function() {
     answers[currentIndex] = parseInt(answerSlider.value);
     saveProgress();
+    
     if (currentIndex < partnerQuestions.length - 1) {
         currentIndex++;
         renderQuestion();
     } else {
-        // 保留答题进度用于深度分析
+        console.log('🎯 女生版提交答案');
+        
         var dim1Score = 0, dim2Score = 0, dim3Score = 0, dim4Score = 0;
         partnerQuestions.forEach(function(q, index) {
             var score = answers[index];
@@ -107,17 +147,27 @@ nextBtn.addEventListener('click', function() {
             else if (q.dimension === 3) dim3Score += score;
             else if (q.dimension === 4) dim4Score += score;
         });
-        var resultData = {dim1: dim1Score, dim2: dim2Score, dim3: dim3Score, dim4: dim4Score, timestamp: new Date().toISOString()};
+        
+        var resultData = {
+            dim1: dim1Score, dim2: dim2Score, dim3: dim3Score, dim4: dim4Score,
+            timestamp: new Date().toISOString()
+        };
+        
         localStorage.setItem('partner-lab-result', JSON.stringify(resultData));
+        localStorage.setItem('partner-lab-answers', JSON.stringify(answers));
+        
         var encoded = btoa(dim1Score + ',' + dim2Score + ',' + dim3Score + ',' + dim4Score);
         var params = new URLSearchParams(window.location.search);
         var partnerParam = params.get('partner');
         var resultUrl = 'partner-result.html?scores=' + encoded;
         if (partnerParam) resultUrl += '&partner=' + encodeURIComponent(partnerParam);
+        
         window.location.href = resultUrl;
     }
 });
+
 renderQuestion();
+console.log('✅ 女生版测试页面初始化完成，题目数量：', partnerQuestions.length);
 </script>
 </body>
 </html>
