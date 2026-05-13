@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的完整深度报告 · 爱的接收模式</title>
+    <style>
+        body { margin:0; padding:16px; background:linear-gradient(135deg,#1a0a28 0%,#2a1a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
+        .container { max-width:420px; margin:0 auto; padding-bottom:40px; }
+        .card { background:rgba(255,255,255,0.05); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
+        .card-title { font-size:16px; font-weight:600; margin-bottom:8px; color:#e05a8a; }
+        .card-text { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.75); }
+        .highlight-card { border:2px solid rgba(224,90,138,0.5); background:rgba(224,90,138,0.08); }
+        .tag { display:inline-block; background:linear-gradient(135deg,#e05a8a,#c04a6a); padding:8px 24px; border-radius:100px; font-size:14px; font-weight:600; margin-bottom:16px; }
+        h1 { font-size:28px; margin-bottom:8px; }
+        .subtitle { font-size:16px; color:rgba(255,255,255,0.6); margin-bottom:24px; }
+        .btn { display:block; width:100%; padding:16px; border-radius:12px; border:none; font-size:18px; font-weight:600; cursor:pointer; text-align:center; margin-top:24px; background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; }
+        .loading { text-align:center; padding:60px 0; font-size:18px; color:rgba(255,255,255,0.6); }
+        .dim-badge { display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:14px; background:rgba(224,90,138,0.2); margin-right:8px; font-size:12px; font-weight:600; }
+    </style>
+</head>
+<body>
+<div class="container" id="report">
+    <div class="loading">✨ 正在生成你的完整深度报告…</div>
+</div>
+
+<script>
+(function(){
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    if (!code) {
+        document.getElementById('report').innerHTML = '<h1>🔒 未找到报告编号</h1><p>请从测试结果页扫码进入。</p>';
+        return;
+    }
+
+    var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+
+    fetch(SUPABASE_URL + '/rest/v1/answers?code=eq.' + encodeURIComponent(code), {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data || data.length === 0) {
+            document.getElementById('report').innerHTML = '<h1>🔒 未找到报告</h1><p>编号可能已过期，请重新测试。<br><br>💡 提示：如果你刚刚支付完成，请等待24小时内邮件通知。</p>';
+            return;
+        }
+        var d = data[0];
+        var answers = d.answers_json || [];
+        var personality = d.personality || '探索者';
+        
+        // 判断是男生版（3维度）还是女生版（4维度）
+        var isPartner = d.dim4 !== undefined;
+        
+        var html = '';
+        html += '<div class="tag">' + personality + '</div>';
+        html += '<h1>📖 完整深度报告</h1>';
+        html += '<div class="subtitle">编号：' + code + ' · 生成时间：' + new Date().toLocaleString() + '</div>';
+        
+        // 得分展示（区分版本）
+        if (isPartner) {
+            html += '<div class="card"><div class="card-title">📊 你的四维度得分</div><div class="card-text">';
+            html += '<span class="dim-badge">1</span> 对他沉默的解读：<b>' + d.dim1 + '/50</b><br>';
+            html += '<span class="dim-badge">2</span> 表达需求的清晰度：<b>' + d.dim2 + '/50</b><br>';
+            html += '<span class="dim-badge">3</span> 对"被爱"的感知：<b>' + d.dim3 + '/50</b><br>';
+            html += '<span class="dim-badge">4</span> 冲突后的修复：<b>' + d.dim4 + '/50</b>';
+            html += '</div></div>';
+        } else {
+            html += '<div class="card"><div class="card-title">📊 你的三维度得分</div><div class="card-text">';
+            html += '自我情绪：<b>' + d.dim1 + '/40</b><br>';
+            html += '共情回应：<b>' + d.dim2 + '/35</b><br>';
+            html += '爱的动力：<b>' + d.dim3 + '/35</b>';
+            html += '</div></div>';
+        }
+        
+        // 如果有答题数据，分析最高/最低分题目
+        if (answers.length > 0) {
+            var maxScore = Math.max.apply(null, answers);
+            var minScore = Math.min.apply(null, answers);
+            var maxQuestions = [];
+            var minQuestions = [];
+            for (var i = 0; i < answers.length; i++) {
+                if (answers[i] === maxScore) maxQuestions.push(i + 1);
+                if (answers[i] === minScore) minQuestions.push(i + 1);
+            }
+            
+            html += '<div class="card highlight-card"><div class="card-title">🔴 得分最高的题目（最需要关注）</div><div class="card-text">';
+            html += '第 ' + maxQuestions.join('、') + ' 题 · 得分 <b>' + maxScore + ' 分</b><br>';
+            html += '这些题目反映了你在关系中<b>压力最大的地方</b>，也是改变的起点。';
+            html += '</div></div>';
+            
+            html += '<div class="card highlight-card"><div class="card-title">🟢 得分最低的题目（你的优势）</div><div class="card-text">';
+            html += '第 ' + minQuestions.join('、') + ' 题 · 得分 <b>' + minScore + ' 分</b><br>';
+            html += '这些你已经做得不错，是你在关系中的<b>核心资源</b>。';
+            html += '</div></div>';
+        }
+        
+        // 维度深度解读
+        if (isPartner) {
+            html += '<div class="card"><div class="card-title">🔍 各维度深度解读</div><div class="card-text">';
+            
+            var dim1Text = d.dim1 >= 38 ? '你对他的沉默非常敏感，容易把安静解读为疏远。' : (d.dim1 >= 25 ? '你有时能分辨沉默的类型，有时会多想。' : '你不太会把他的沉默当成压力，能够给他留出空间。');
+            html += '<b>📌 维度一 · 对他沉默的解读</b><br>' + dim1Text + '<br><br>';
+            
+            var dim2Text = d.dim2 >= 38 ? '你的表达常常是加密的，嘴上说"没事"，心里希望他能自己发现。' : (d.dim2 >= 25 ? '你多数时候能说清需求，但压力下会选择绕弯子。' : '你能直接表达自己的需求，沟通成本很低。');
+            html += '<b>📌 维度二 · 表达需求的清晰度</b><br>' + dim2Text + '<br><br>';
+            
+            var dim3Text = d.dim3 >= 38 ? '你对爱的感知方式比较固定，需要特定的信号才能确认被爱。' : (d.dim3 >= 25 ? '你能从多种方式感知爱，但有偏好的接收频道。' : '你的爱意接收器很灵活，能从多种行为中解读出爱。');
+            html += '<b>📌 维度三 · 对"被爱"的感知</b><br>' + dim3Text + '<br><br>';
+            
+            var dim4Text = d.dim4 >= 38 ? '你在冲突后需要完整的对话才能感到安全，翻篇对你来说不够。' : (d.dim4 >= 25 ? '你能接受不同的修复节奏，但有时会等太久。' : '你有自己的修复方式，不需要依赖他的节奏。');
+            html += '<b>📌 维度四 · 冲突后的修复</b><br>' + dim4Text;
+            
+            html += '</div></div>';
+        } else {
+            html += '<div class="card"><div class="card-title">🔍 各维度深度解读</div><div class="card-text">';
+            
+            var dim1TextM = d.dim1 >= 28 ? '你习惯用做事来逃避情绪，很少停下来问问自己怎么了。' : (d.dim1 >= 17 ? '你有时能识别情绪，但压力下还是会堵住。' : '你对自己情绪的觉察比较清晰，这很难得。');
+            html += '<b>📌 维度一 · 自我情绪的识别与接纳</b><br>' + dim1TextM + '<br><br>';
+            
+            var dim2TextM = d.dim2 >= 28 ? '你不太确定伴侣需要的是建议还是倾听，经常会给错东西。' : (d.dim2 >= 17 ? '你有时能接住情绪，有时会不自觉地开始解决问题。' : '你能分辨伴侣什么时候需要倾听，什么时候需要建议。');
+            html += '<b>📌 维度二 · 共情与情感回应</b><br>' + dim2TextM + '<br><br>';
+            
+            var dim3TextM = d.dim3 >= 28 ? '你对关系的驱动力更多来自责任，而不是内心真实的渴望。' : (d.dim3 >= 17 ? '你内心有渴望，但常被现实和责任淹没。' : '你的爱的动力来自内心，是主动的而不是被动的。');
+            html += '<b>📌 维度三 · 爱的动机与内在驱动力</b><br>' + dim3TextM;
+            
+            html += '</div></div>';
+        }
+        
+        // 专属行动建议
+        html += '<div class="card"><div class="card-title">💡 专属行动建议</div><div class="card-text">';
+        
+        if (isPartner) {
+            if (d.dim1 >= 38) html += '• 他沉默时，试着告诉自己："这不一定是我的问题"，先观察10分钟再回应。<br>';
+            if (d.dim2 >= 38) html += '• 下次想说"没事"的时候，换成："我有点不开心，但我还没想好怎么说，等我一下。"<br>';
+            if (d.dim3 <= 25) html += '• 试着列出3件他做过让你感到被爱的事（哪怕很小），写下来提醒自己。<br>';
+            if (d.dim4 >= 38) html += '• 告诉他："吵完架我需要一个确定的信号（比如牵一下手），才能安心睡觉。"<br>';
+        } else {
+            if (d.dim1 >= 28) html += '• 每天花2分钟问自己："我现在是什么感觉？"不评判，只说名字（生气/难过/累）。<br>';
+            if (d.dim2 >= 28) html += '• 下次她倾诉时，先问："你是想让我听，还是想让我出主意？"<br>';
+            if (d.dim3 >= 28) html += '• 问自己一个问题："如果不考虑责任和别人的期待，我想不想靠近她？"<br>';
+        }
+        
+        if (html.indexOf('•') === -1) {
+            html += '你已经做得不错了。下一步是：把这份报告分享给TA，两个人一起看。';
+        }
+        
+        html += '</div></div>';
+        
+        // 免责说明 + 付费解锁逐题解读
+        html += '<div class="card" style="text-align:center;">';
+        html += '<div class="card-title">🔓 想要更深入的逐题分析？</div>';
+        html += '<div class="card-text" style="margin-bottom:12px;">当前报告为摘要版。<br>完整版包含<b>' + (isPartner ? '40道' : '22道') + '道题的逐题深度解读</b> + 专属行动指南（约3000字）。</div>';
+        html += '<button class="btn" id="unlockBtn">9.9元 · 解锁完整版报告 →</button>';
+        html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">微信支付后发邮件，24小时内发送完整版</p>';
+        html += '</div>';
+        
+        html += '<div class="card" style="text-align:center; background:rgba(255,255,255,0.02);">';
+        html += '<div class="card-text" style="font-size:12px; color:rgba(255,255,255,0.4);">';
+        html += '⚠️ 本报告仅为个人反思工具，不构成心理诊断。<br>';
+        html += '如有严重的情绪困扰或关系危机，建议寻求专业心理咨询。';
+        html += '</div></div>';
+        
+        document.getElementById('report').innerHTML = html;
+        
+        // 绑定解锁按钮
+        document.getElementById('unlockBtn').onclick = function() {
+            alert('📧 请发邮件到：wotule_nilongme@163.com\n\n邮件标题：【解锁报告】' + code + '\n邮件内容：你的微信昵称 + 报告编号 ' + code + '\n\n我会回复你付款方式（微信收款码），支付后24小时内发送完整版逐题解读。\n\n感谢你的信任 ❤️');
+        };
+    })
+    .catch(function(err) {
+        console.error(err);
+        document.getElementById('report').innerHTML = '<h1>⚠️ 加载失败</h1><p>请检查网络后重试。<br><br>或发邮件到 <b>wotule_nilongme@163.com</b><br>提供你的报告编号 <b>' + code + '</b>，我会手动发送给你。</p>';
+    });
+})();
+</script>
+</body>
+</html>
