@@ -67,6 +67,13 @@
         <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">微信支付，自动生成</p>
     </div>
 
+        <!-- 创作者故事入口 -->
+        <div class="card" style="text-align:center; cursor:pointer;" id="aboutCard">
+            <div style="font-size:32px; margin-bottom:8px;">🐰🐲</div>
+            <div class="card-title" style="color:#f0974a;">"我兔了"和"你龙么"是怎么来的？</div>
+            <div class="card-text" style="color:rgba(255,255,255,0.5);">看看创作者的故事</div>
+        </div>
+
     <!-- 双人报告模块 -->
     <div id="coupleModule" style="display:none;">
         <div class="card highlight">
@@ -85,7 +92,6 @@
         <button class="btn btn-orange" id="saveBtn">保存结果</button>
         <button class="btn btn-pink" id="shareBtn">分享给她 →</button>
         <button class="btn btn-ghost" id="reopenCoupleBtn" style="display:none;">查看双人报告</button>
-        <button class="btn btn-ghost" id="aboutBtn" style="font-size:12px; opacity:0.4;">📄 关于这份量表</button>
     </div>
 </div>
 
@@ -240,7 +246,7 @@ if(partner){
 }
 
 // ========== 关于这份量表 ==========
-document.getElementById('aboutBtn').onclick=function(){
+document.getElementById('aboutCard ').onclick=function(){
     var overlay=document.createElement('div');overlay.className='modal-overlay';
     overlay.innerHTML='<div class="modal-box" style="text-align:left; max-height:80vh; overflow-y:auto; max-width:380px;">'+
         '<div class="modal-icon">✉️</div>'+
