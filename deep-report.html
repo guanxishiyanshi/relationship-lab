@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>完整深度报告</title>
+    <title>完整深度报告 · 已解锁</title>
     <style>
         body { margin:0; padding:16px; background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
         .container { max-width:420px; margin:0 auto; padding-bottom:40px; }
@@ -15,20 +15,23 @@
         h1 { font-size:28px; margin-bottom:8px; }
         .subtitle { font-size:16px; color:rgba(255,255,255,0.6); margin-bottom:24px; }
         .btn { display:block; width:100%; padding:16px; border-radius:12px; border:none; font-size:18px; font-weight:600; cursor:pointer; text-align:center; margin-top:24px; background:linear-gradient(135deg,#ff6b35,#f0974a); color:#fff; }
+        .locked-badge { background:rgba(240,151,74,0.2); border-radius:20px; padding:8px 16px; font-size:14px; display:inline-block; margin-bottom:16px; }
         .loading { text-align:center; padding:60px 0; font-size:18px; color:rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
 <div class="container" id="report">
-    <div class="loading">正在生成你的完整深度报告…</div>
+    <div class="loading">✨ 正在生成你的完整深度报告…</div>
 </div>
 
 <script>
 (function(){
     var params = new URLSearchParams(window.location.search);
     var code = params.get('code');
+    var isPaid = (params.get('unlock') === 'paid');  // 关键：检测是否付费解锁
+
     if (!code) {
-        document.getElementById('report').innerHTML = '<h1>未找到报告编号</h1><p>请从测试结果页扫码进入。</p>';
+        document.getElementById('report').innerHTML = '<h1>🔒 未找到报告编号</h1><p>请从测试结果页扫码进入。</p>';
         return;
     }
 
@@ -41,53 +44,158 @@
     .then(function(r) { return r.json(); })
     .then(function(data) {
         if (!data || data.length === 0) {
-            document.getElementById('report').innerHTML = '<h1>未找到报告</h1><p>编号可能已过期，请重新测试。</p>';
+            document.getElementById('report').innerHTML = '<h1>🔒 未找到报告</h1><p>编号可能已过期，请重新测试。<br><br>💡 提示：如果你刚刚支付完成，请等待24小时内邮件通知。</p>';
             return;
         }
         var d = data[0];
-        var answers = d.answers_json;
-        var personality = d.personality;
-
-        var maxScore = Math.max.apply(null, answers);
-        var minScore = Math.min.apply(null, answers);
-        var maxQuestions = [];
-        var minQuestions = [];
-        for (var i = 0; i < answers.length; i++) {
-            if (answers[i] === maxScore) maxQuestions.push(i + 1);
-            if (answers[i] === minScore) minQuestions.push(i + 1);
-        }
-
+        var answers = d.answers_json || [];
+        var personality = d.personality || '探索者';
+        
+        // 判断版本
+        var isPartner = d.dim4 !== undefined;
+        
         var html = '';
         html += '<div class="tag">' + personality + '</div>';
-        html += '<h1>完整深度报告</h1>';
-        html += '<div class="subtitle">编号：' + code + '</div>';
-
-        html += '<div class="card"><div class="card-title">📊 你的三维度得分</div><div class="card-text">';
-        html += '自我情绪：<b>' + d.dim1 + '/40</b><br>';
-        html += '共情回应：<b>' + d.dim2 + '/35</b><br>';
-        html += '爱的动力：<b>' + d.dim3 + '/35</b>';
+        html += '<h1>📖 完整深度报告</h1>';
+        html += '<div class="subtitle">编号：' + code + ' · 生成时间：' + new Date().toLocaleString() + '</div>';
+        
+        // 付费状态提示（仅已付费时显示）
+        if (isPaid) {
+            html += '<div class="card highlight-card" style="background:rgba(76,175,80,0.1); border-color:#4caf50;">';
+            html += '<div class="card-title" style="color:#4caf50;">✅ 感谢支持 · 已解锁完整版</div>';
+            html += '<div class="card-text">你已经解锁全部深度解读，以下内容为完整报告。</div>';
+            html += '</div>';
+        }
+        
+        // 得分展示
+        if (isPartner) {
+            html += '<div class="card"><div class="card-title">📊 你的四维度得分</div><div class="card-text">';
+            html += '<b>维度一 沉默解读：</b>' + d.dim1 + '/50<br>';
+            html += '<b>维度二 需求表达：</b>' + d.dim2 + '/50<br>';
+            html += '<b>维度三 爱意感知：</b>' + d.dim3 + '/50<br>';
+            html += '<b>维度四 冲突修复：</b>' + d.dim4 + '/50';
+            html += '</div></div>';
+        } else {
+            html += '<div class="card"><div class="card-title">📊 你的三维度得分</div><div class="card-text">';
+            html += '<b>自我情绪：</b>' + d.dim1 + '/40<br>';
+            html += '<b>共情回应：</b>' + d.dim2 + '/35<br>';
+            html += '<b>爱的动力：</b>' + d.dim3 + '/35';
+            html += '</div></div>';
+        }
+        
+        // 题目分析（如果有答题数据）
+        if (answers.length > 0) {
+            var maxScore = Math.max.apply(null, answers);
+            var minScore = Math.min.apply(null, answers);
+            var maxQuestions = [];
+            var minQuestions = [];
+            for (var i = 0; i < answers.length; i++) {
+                if (answers[i] === maxScore) maxQuestions.push(i + 1);
+                if (answers[i] === minScore) minQuestions.push(i + 1);
+            }
+            
+            html += '<div class="card highlight-card"><div class="card-title">🔍 最需要关注的题目（得分相对较高）</div><div class="card-text">';
+            html += '第 ' + maxQuestions.join('、') + ' 题 · 得分 <b>' + maxScore + '/5</b><br>';
+            html += '这些方面你更容易出现困扰，建议优先探索。';
+            html += '</div></div>';
+            
+            html += '<div class="card highlight-card"><div class="card-title">💪 已经做得不错的方面（得分较低）</div><div class="card-text">';
+            html += '第 ' + minQuestions.join('、') + ' 题 · 得分 <b>' + minScore + '/5</b><br>';
+            html += '这些方面你表现良好，继续保持。';
+            html += '</div></div>';
+        }
+        
+        // 详细解读（无论是否付费都显示，但付费后显示更完整的内容）
+        html += '<div class="card"><div class="card-title">🧠 深度心理解读</div><div class="card-text">';
+        if (isPartner) {
+            html += '<p>女生的情感模式往往更关注关系中的细节和信号。你的得分显示：</p><ul>';
+            if (d.dim1 > 35) html += '<li><b>沉默解读敏感</b>：容易将对方的安静误解为排斥或不满，这可能让你在关系中过度焦虑。</li>';
+            else if (d.dim1 < 20) html += '<li><b>沉默解读轻松</b>：你能给予对方空间，不太因为沉默而感到不安，这是很大的优势。</li>';
+            else html += '<li><b>沉默解读中等</b>：多数时候你能理性看待，但偶尔会多想，注意沟通即可。</li>';
+            
+            if (d.dim2 > 35) html += '<li><b>需求表达含蓄</b>：你习惯用暗示或沉默表达需求，对方可能接收不到，建议练习直接表达。</li>';
+            else if (d.dim2 < 20) html += '<li><b>需求表达清晰</b>：你能直接说出自己的需要，这是关系中的宝贵能力。</li>';
+            else html += '<li><b>需求表达平衡</b>：既有温柔也有直接，关键在于场合与心情。</li>';
+            
+            if (d.dim3 > 35) html += '<li><b>爱意感知特定</b>：你只对某些形式的爱敏感，可以主动告诉对方你喜欢的“爱的语言”。</li>';
+            else if (d.dim3 < 20) html += '<li><b>爱意感知多元</b>：你能从多种行为中感受到爱，适应力强。</li>';
+            else html += '<li><b>爱意感知灵活</b>：你既期待特定表达，也能看到其他形式的在意。</li>';
+            
+            if (d.dim4 > 35) html += '<li><b>冲突修复需仪式</b>：你需要正式的和好信号，可以明确表达需求，避免等待受伤。</li>';
+            else if (d.dim4 < 20) html += '<li><b>冲突修复独立</b>：你能较快自我调节，也愿意主动和解。</li>';
+            else html += '<li><b>冲突修复适中</b>：你能够接受不同的和好节奏，关系弹性较好。</li>';
+            html += '</ul>';
+        } else {
+            html += '<p>男性在情感中常被社会期待塑造得更加“坚强”“解决问题”。你的得分显示：</p><ul>';
+            if (d.dim1 > 28) html += '<li><b>情绪处理倾向压抑</b>：你习惯用忙碌逃避感受，长期可能造成内心疏离。</li>';
+            else if (d.dim1 < 17) html += '<li><b>情绪觉察良好</b>：你能识别并接纳自己的情绪，这是心理健康的基石。</li>';
+            else html += '<li><b>情绪觉察中等</b>：你有时能停下来感受，有时还是选择忙起来，可以更多练习正念。</li>';
+            
+            if (d.dim2 > 28) html += '<li><b>共情回应以解决问题为主</b>：你更擅长给建议而非倾听，可以练习先问“你是想让我听，还是想办法”。</li>';
+            else if (d.dim2 < 17) html += '<li><b>共情能力敏锐</b>：你能分辨伴侣何时需要安慰，这是高情商的表现。</li>';
+            else html += '<li><b>共情回应平衡</b>：你会在适当时候倾听，也懂得提供支持，继续发挥优势。</li>';
+            
+            if (d.dim3 > 28) html += '<li><b>爱的驱动力偏向责任</b>：你更多是“应该爱”而不是“渴望爱”，可以试着找回关系中的浪漫动机。</li>';
+            else if (d.dim3 < 17) html += '<li><b>爱的驱动力发自内心</b>：你主动靠近对方，情感真挚，这是非常珍贵的。</li>';
+            else html += '<li><b>爱的动机混合</b>：既有责任也有渴望，可以通过创造共同的新鲜体验来增强自主的爱意。</li>';
+            html += '</ul>';
+        }
+        html += '<p>以上分析基于你的答题模式，建议结合实际情况灵活看待。关系是双人舞，了解自己是第一步。</p>';
         html += '</div></div>';
-
-        html += '<div class="card highlight-card"><div class="card-title">🔴 得分最高的题目（最需要关注）</div><div class="card-text">';
-        html += '第 ' + maxQuestions.join('、') + ' 题 · 得分 <b>' + maxScore + ' 分</b><br>';
-        html += '这些题目指向你最核心的困局。';
+        
+        // 行动建议
+        html += '<div class="card"><div class="card-title">🚀 3 条可立刻行动的建议</div><div class="card-text">';
+        if (isPartner) {
+            html += '<ol><li>下次感觉他沉默时，试着心里默念“他可能只是累了，与我无关”，等10分钟再观察。</li>';
+            html += '<li>把你的需求写在一张小纸条上贴冰箱：“我今天需要你陪我聊10分钟”。</li>';
+            html += '<li>如果他做了让你感到被爱的事，立刻告诉他：“你刚刚……让我觉得很温暖”。</li></ol>';
+        } else {
+            html += '<ol><li>每天睡前问自己：今天我有哪些情绪？不给它们打分，只是看见。</li>';
+            html += '<li>当伴侣情绪低落时，先问：“你是想让我听，还是想一起想办法？”</li>';
+            html += '<li>找个安静的时刻，问她：“你最喜欢我用什么方式向你表达爱？”</li></ol>';
+        }
         html += '</div></div>';
-
-        html += '<div class="card highlight-card"><div class="card-title">🟢 得分最低的题目（你的优势）</div><div class="card-text">';
-        html += '第 ' + minQuestions.join('、') + ' 题 · 得分 <b>' + minScore + ' 分</b><br>';
-        html += '这些是你已经做得不错的地方，继续保持。';
+        
+        // ========== 关键：仅当未付费时才显示付费解锁按钮 ==========
+        if (!isPaid) {
+            html += '<div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6); background:rgba(240,151,74,0.08);">';
+            html += '<div class="card-title" style="color:#f0974a;">🔓 解锁完整逐题解读</div>';
+            html += '<div class="card-text" style="margin-bottom:12px;">当前显示摘要版。<br>完整版包含<b>每道题的详细分析</b> + 个性化行动指南（约3000字）。</div>';
+            html += '<button class="btn" id="unlockBtn">9.9元 · 解锁完整报告 →</button>';
+            html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">微信支付后发送邮件，24小时内发送</p>';
+            html += '</div>';
+        } else {
+            // 已付费：显示感谢和额外内容
+            html += '<div class="card highlight-card" style="background:rgba(76,175,80,0.05);">';
+            html += '<div class="card-title" style="color:#4caf50;">📬 下一步：获取完整逐题解读</div>';
+            html += '<div class="card-text">你已经完成了付费，但由于系统限制，完整的 <b>22/40 道逐题详细分析</b> 会通过邮件发送给你。<br><br>';
+            html += '请发送邮件到 <b>wotule_nilongme@163.com</b>，标题注明【已付费+你的编号 ' + code + '】，我会在24小时内将完整版（Word/PDF）发送给你。<br><br>';
+            html += '再次感谢你的支持！❤️</div>';
+            html += '</div>';
+        }
+        
+        // 免责声明
+        html += '<div class="card" style="text-align:center; background:rgba(255,255,255,0.02);">';
+        html += '<div class="card-text" style="font-size:12px; color:rgba(255,255,255,0.4);">';
+        html += '⚠️ 本报告仅为个人反思工具，不构成心理诊断。<br>';
+        html += '如有严重的情绪困扰或关系危机，建议寻求专业心理咨询。';
         html += '</div></div>';
-
-        html += '<div class="card" style="text-align:center;">';
-        html += '<div class="card-title">🔓 想看每道题的详细深度解读？</div>';
-        html += '<div class="card-text" style="margin-bottom:12px;">解锁 <b>2000字完整逐题分析</b>，含专属行动指南。</div>';
-        html += '<button class="btn" onclick="alert(\'请发邮件到 wotule_nilongme@163.com\n\n邮件里备注你的报告编号：' + code + '\n\n我会在24小时内把逐题深度解读发给你。\n（9.9元，微信支付，发邮件后我会回复付款方式）\')">9.9元 · 解锁逐题深度解读</button>';
-        html += '</div>';
-
+        
         document.getElementById('report').innerHTML = html;
+        
+        // 如果未付费，绑定解锁按钮
+        if (!isPaid) {
+            var unlockBtn = document.getElementById('unlockBtn');
+            if (unlockBtn) {
+                unlockBtn.onclick = function() {
+                    alert('📧 请发邮件到：wotule_nilongme@163.com\n\n邮件标题：【解锁报告】' + code + '\n邮件内容：你的微信昵称 + 报告编号 ' + code + '\n\n我会回复你付款方式（微信收款码），支付后24小时内发送完整版逐题解读。\n\n感谢你的信任 ❤️');
+                };
+            }
+        }
     })
-    .catch(function() {
-        document.getElementById('report').innerHTML = '<h1>加载失败</h1><p>请检查网络后重试。<br>或发邮件到 wotule_nilongme@163.com 获取报告。</p>';
+    .catch(function(err) {
+        console.error(err);
+        document.getElementById('report').innerHTML = '<h1>⚠️ 加载失败</h1><p>请检查网络后重试。<br><br>或发邮件到 <b>wotule_nilongme@163.com</b><br>提供你的报告编号 <b>' + code + '</b>，我会手动发送给你。</p>';
     });
 })();
 </script>
