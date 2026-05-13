@@ -51,7 +51,6 @@
     <div class="card highlight"><div class="card-title" style="color:#e05a8a;">🔍 核心发现</div><div class="card-text" id="core"></div></div>
     <div id="deepCard"></div>
 
-    <!-- 🔒 深度报告入口 -->
     <div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6); background:rgba(224,90,138,0.08);">
         <div class="card-title" style="color:#e05a8a; font-size:18px;">🔒 完整深度报告（逐题解读）</div>
         <div class="card-text" style="margin-bottom:12px;">包含 <b>40 道题逐题分析</b> + 专属关系建议</div>
@@ -59,7 +58,6 @@
         <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">解锁码获取方式：关注小红书 @关系实验室</p>
     </div>
 
-    <!-- 小红书引流卡片 -->
     <div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6);">
         <div class="card-title" style="color:#e05a8a;">📕 获取完整逐题解读</div>
         <div class="xhs-card">
@@ -203,22 +201,51 @@ try {
     if (codeSpan) codeSpan.textContent = currentReportCode;
 } catch(e) { console.log(e); }
 
+// ========== 强制保存到 Supabase（修复数据丢失） ==========
 var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
 var reportCodeForSave = currentReportCode;
 
-(function saveToSupabase(){
-    var alreadySaved = localStorage.getItem('partner-lab-data-saved');
-    if (alreadySaved === 'true') { console.log('数据已保存过，跳过'); return; }
-    try {
-        var savedProgress = localStorage.getItem('partner-lab-progress');
-        var answersArray = savedProgress ? JSON.parse(savedProgress).answers : [];
-        fetch(SUPABASE_URL + '/rest/v1/answers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ code: reportCodeForSave, personality: personality, dim1: scores.dim1, dim2: scores.dim2, dim3: scores.dim3, dim4: scores.dim4, answers_json: answersArray })
-        }).then(function() { localStorage.setItem('partner-lab-data-saved', 'true'); }).catch(function(e){ console.log('保存失败', e); });
-    } catch(e) { console.log(e); }
+(function saveToSupabase() {
+    var answersArray = null;
+    var savedAnswers = localStorage.getItem('partner-lab-answers');
+    if (savedAnswers) {
+        answersArray = JSON.parse(savedAnswers);
+    } else {
+        var progress = localStorage.getItem('partner-lab-progress');
+        if (progress) answersArray = JSON.parse(progress).answers;
+    }
+    if (!answersArray || answersArray.length === 0) {
+        console.log('⚠️ 无答案数据，跳过保存');
+        return;
+    }
+    fetch(SUPABASE_URL + '/rest/v1/answers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+            code: reportCodeForSave,
+            personality: personality,
+            dim1: scores.dim1,
+            dim2: scores.dim2,
+            dim3: scores.dim3,
+            dim4: scores.dim4,
+            answers_json: answersArray
+        })
+    })
+    .then(function(res) {
+        if (res.ok) {
+            console.log('✅ 女生版数据保存成功', reportCodeForSave);
+            localStorage.setItem('partner-lab-data-saved', 'true');
+        } else {
+            console.error('❌ 保存失败', res.status);
+        }
+    })
+    .catch(function(e) { console.error('保存异常', e); });
 })();
 
 window.addEventListener('DOMContentLoaded', function() {

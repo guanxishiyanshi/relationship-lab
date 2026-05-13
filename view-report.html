@@ -26,6 +26,8 @@
         .summary-title { font-size:20px; font-weight:700; margin-bottom:12px; color:#f0974a; }
         .summary-text { font-size:15px; line-height:1.75; color:rgba(255,255,255,0.9); }
         .loading { text-align:center; padding:60px 0; color:rgba(255,255,255,0.6); }
+        .error-box { background:rgba(240,151,74,0.15); border-radius:16px; padding:24px; text-align:center; margin:20px 0; }
+        .btn-retry { background:linear-gradient(135deg,#f0974a,#e05a2a); border:none; padding:12px 24px; border-radius:30px; color:#fff; font-weight:600; cursor:pointer; margin-top:16px; }
     </style>
 </head>
 <body>
@@ -43,7 +45,7 @@
 </div>
 
 <script>
-// ========== 题目库 ==========
+// 男生版题目库（22题）
 const QUESTIONS = [
     { id: 1, text: "感到烦躁或低落的时候，我第一反应是给自己找点事做，比如工作、打游戏、刷视频，让自己忙起来不去想它。", dimension: 1 },
     { id: 2, text: "情绪上来的那个当下，我通常只觉得心里乱糟糟的，说不清楚自己到底是生气、委屈还是失望。", dimension: 1 },
@@ -69,94 +71,36 @@ const QUESTIONS = [
     { id: 22, text: "我能想象婚后日子会慢慢变淡，甚至彼此都有点倦了，但我对自己能不能经营好它、让这个家一直有点温度，心里是没底的。", dimension: 3 }
 ];
 
-// ========== 每题解读（根据分数） ==========
 function getInsight(score, dimension) {
     if (score >= 4) {
-        if (dimension === 1) return "🔴 你选择了「符合」。这说明你习惯用逃避来应对情绪，长期下来可能会让你离自己的感受越来越远。试着在下一次情绪上来时，先停下来问自己一句：“我现在是什么感觉？”——不解决问题，只是看见它。";
-        if (dimension === 2) return "🔴 你选择了「符合」。这说明你在共情回应上常常感到困惑或压力。下次她情绪不好时，试着先问一句：“你想让我听，还是想一起想办法？”这一句话可以避免80%的无效安慰。";
-        if (dimension === 3) return "🔴 你选择了「符合」。这说明你的爱的驱动力更多来自责任或恐惧，而不是内心真实的渴望。找一个安静的时刻，问自己：“如果不考虑任何人的期待，我想和她一起做什么？”";
-        return "🔴 这个模式值得你关注，它是你可以开始调整的地方。";
+        if (dimension === 1) return "🔴 你选择了「符合」。这说明你习惯用逃避来应对情绪，长期下来可能会让你离自己的感受越来越远。试着在下一次情绪上来时，先停下来问自己一句：“我现在是什么感觉？”";
+        if (dimension === 2) return "🔴 你选择了「符合」。这说明你在共情回应上常常感到困惑。下次她情绪不好时，试着先问一句：“你想让我听，还是想一起想办法？”";
+        if (dimension === 3) return "🔴 你选择了「符合」。这说明你的爱的驱动力更多来自责任。问自己：“如果不考虑任何人的期待，我想和她一起做什么？”";
+        return "🔴 这个模式值得你关注。";
     } else if (score <= 2) {
-        if (dimension === 1) return "🟢 你选择了「不符合」。这说明你对自己情绪的觉察已经有一定的能力，这是很多男性缺失的宝贵能力。继续保持，也可以尝试偶尔把这种觉察分享给她。";
-        if (dimension === 2) return "🟢 你选择了「不符合」。这说明你在共情回应上已经比较自然，能够分辨她什么时候需要倾听、什么时候需要建议。这是你在关系中的核心优势。";
-        if (dimension === 3) return "🟢 你选择了「不符合」。这说明你的爱的驱动力更多来自内心的渴望而非外部压力。这份主动和真诚是你们关系中最温暖的燃料。";
-        return "🟢 你已经在这方面做得不错了，继续保持。";
+        if (dimension === 1) return "🟢 你选择了「不符合」。这说明你对自己情绪的觉察已经有一定的能力，这是很多男性缺失的宝贵能力。";
+        if (dimension === 2) return "🟢 你选择了「不符合」。这说明你在共情回应上已经比较自然，这是你在关系中的核心优势。";
+        if (dimension === 3) return "🟢 你选择了「不符合」。这说明你的爱的驱动力来自内心渴望，这是关系中最温暖的燃料。";
+        return "🟢 你已经在这方面做得不错了。";
     } else {
-        if (dimension === 1) return "🟡 你选择了中间分数。这说明你有时能觉察情绪，有时还是会选择逃避。这是大多数人的状态，你可以通过每天2分钟的“自我扫描”练习，慢慢提升觉察能力。";
-        if (dimension === 2) return "🟡 你选择了中间分数。这说明你在共情上有时能接住，有时会卡住。你正在新旧模式之间切换，已经比很多人走得远了。";
-        if (dimension === 3) return "🟡 你选择了中间分数。这说明你内心既有渴望也有犹豫，既有责任也有疑问。你已经意识到了这一点，这是改变的第一步。";
-        return "🟡 这个描述对你来说部分符合，部分不符合。你可以根据自己的感受，决定是否需要调整。";
+        if (dimension === 1) return "🟡 你选择了中等分数。你有时能觉察情绪，有时还是会逃避。你可以通过每天2分钟的“自我扫描”练习来提升。";
+        if (dimension === 2) return "🟡 你选择了中等分数。你在共情上有时能接住，有时会卡住。你正在新旧模式之间切换。";
+        if (dimension === 3) return "🟡 你选择了中等分数。你内心既有渴望也有犹豫，你已经意识到了这一点，这是改变的第一步。";
+        return "🟡 这个描述对你来说部分符合，可以根据自己的感受决定是否需要调整。";
     }
 }
 
-// ========== 6种画像的深度总结（500字左右） ==========
-function getSummary(personality, dim1, dim2, dim3) {
+function getSummary(personality) {
     const summaries = {
-        '全面冻结型': `你的情感世界像一座被冰封的湖面，表面平静，下面藏着很多没有说出口的情绪。
-\n
-你习惯用“忙起来”来应对一切——情绪来了就工作、打游戏、刷视频，总之不要停下来。这个本领是你从小练成的，也许是因为你见过身边的大人用沉默和忙碌处理一切，也许是因为你听过“男儿有泪不轻弹”。这套策略帮你活到了现在，但它有一个代价：你越来越听不见自己内心的声音。不是没有情绪，是你把它们都关进了“待处理”的文件夹，然后忘了打开。
-\n
-你的伴侣有时候会说“你好像不在乎”。其实你不是不在乎，你是不知道怎么把在乎翻译成她能听懂的语言。你以为把问题解决掉就是爱，但她要的可能只是你坐在她旁边，说一句“我在这里”。
-\n
-你不是天生就这样。这是你从小到大的生存策略。但现在你已经有能力换一种活法了——不是放弃解决问题，而是在解决问题之前，先看见情绪。
-\n
-你可以从一件很小的事开始：下次感到烦躁时，不急着刷手机，先闭上眼睛10秒钟，问自己：“我现在身体哪个地方有感觉？”不需要答案，只是问。这一步，就已经是改变了。你不需要一夜之间变成另一个人，只需要在那些被情绪淹没的时刻，多给自己10秒钟的停顿。`,
-        
-        '孤独的付出者': `你是那种“做得多，说得少”的人。你觉得自己已经扛起了很多——努力工作、照顾家庭、不出格、不摆烂，为什么她还是觉得不够？
-\n
-问题不在你做没做，而在“爱的翻译器”出了故障。你表达关心的方式是抄起工具箱：她一烦，你就开始分析、给方案、帮她解决。你觉得自己在爱她，但她接收到的信号是“我在被修理”。这中间的落差，不是谁错了，是你们在用不同的语言说话。你说的是“行动”，她听的是“言语”。你用搬砖证明爱，她用拥抱确认爱——都没错，只是频道不同。
-\n
-你可能会觉得委屈：“我都做了这么多，她还要怎样？”但委屈的背后，其实是你也很渴望被看见。你付出了很多，但很少说出口，也很少被她看见。这让你在关系中慢慢变得沉默，甚至有点累。
-\n
-改变可以从一个很小的动作开始：下次她说“今天好累”，你先别急着说“那我帮你做”，试着先说一句“听起来你今天确实不容易”。就这一句话，你们之间的频道就开始接通了。你不是在放弃你的工具箱，而是在工具箱外面加了一层“看见”。`,
-        
-        '孤独的阅读者': `你是少数能“读到”她情绪的男性。她脸上的微表情、语气里的变化、甚至沉默的不同类型，你都能分辨。这是很多人没有的天赋。
-\n
-但你的困境是：读到了，却不知道怎么回应。你像是一个听力极好的人，却不会说话。这不是你的错，是你从小到大没有人教过你“听见之后该怎么做”。于是你常常站在她情绪的边缘，手足无措。你知道她难过，但你怕说错话；你知道她需要安慰，但你不确定她是想要拥抱还是想要空间。这种不确定性让你焦虑，有时候你宁愿自己不要读得那么清楚——“不知道就不会有压力”。
-\n
-但你知道吗？她能感觉到你在。哪怕你只是安静地坐在旁边，哪怕你笨拙地说了一句“我不知道怎么安慰你，但我在”，这对她来说，已经是很大的回应了。
-\n
-你不需要成为情绪专家。你只需要做一件事：下次你读到她有情绪时，试着说出你读到的——“我感觉你今天有点累，是不是？”不解决，只是确认。你会发现，这个动作本身，就已经是爱了。`,
-        
-        '未启程的旅人': `你是这几类中“基础最好”的人。你能识别自己的情绪，也能感知她的需要。按理说，你应该是关系中最游刃有余的那个。
-\n
-但你有一个自己都没意识到的坎：你不太确定自己为什么要在关系里。你觉得自己一个人也可以过得挺好，甚至有时候觉得关系是一种负担——“要照顾另一个人的情绪，好累。”
-\n
-这不是冷漠，这是你在保护自己。也许你见过太多不健康的关系，也许你害怕失去自由，也许你只是还没遇到那个让你“想主动靠近”的人。你的问题不是能力，是意愿。你像一个车况很好的车，但一直停在车库里。你不是不能开，是你还没想好要去哪里。
-\n
-你可以试着问自己一个不问“应该”的问题：如果抛开所有责任、别人的期待、年龄的压力，我想和另一个人一起做什么？哪怕是一件很小的事——比如一起吃一顿不用说话的饭，或者一起看一部不用讨论的电影。找到那个微小的“想”，你就找到了出发的理由。`,
-        
-        '责任型守护者': `你是关系里的“承重墙”。你扛起了经济、扛起了责任、扛起了“不让家人操心”。你是一个好丈夫、好父亲、好儿子——至少你自己是这样要求自己的。
-\n
-但你有过一个瞬间吗？半夜醒来，或者一个人开车的时候，心里会冒出一个很小很小的声音：“我快乐吗？”那个声音很快就被你压下去了——因为你想，快乐不重要，责任才重要。
-\n
-你的爱是“应当”驱动的。你应当对她好、应当养家、应当不让她失望。这套逻辑让你活得很稳，但也让你活得很重。你不是在爱，你是在完成一个又一个“应当”。而且你会发现一个矛盾：你越是用责任去爱，她越觉得你“只是在完成任务”。不是她不感恩，是她感受不到那种“我想靠近你”的温度。
-\n
-这不是你的错，这是你从小被植入的程序。但现在，你可以给自己装一个补丁：每个月做一件“不为什么”的事——不是为了家庭、不是为了责任、不是为了面子，只是因为你想。哪怕只是买一束花放在桌上，不说任何话。你会发现，“想”和“应当”出来的爱，味道是不一样的。`,
-        
-        '双向通达型': `你是少数已经走通这条路的人。你能看见自己的情绪，也能接住她的情绪；你爱一个人，不是因为她需要你，而是因为你想要靠近她。
-\n
-这非常难得。在男性群体中，这是一种稀缺的能力。你没有被“男儿有泪不轻弹”绑住，也没有把爱简化成责任。你知道关系是需要经营的，也愿意经营。
-\n
-但我想提醒你一件事：走得顺的时候，最容易忽略的是“对方是不是也在用她的方式爱你”。因为你太会爱了，有时候你会不自觉地承担更多——更主动地沟通、更主动地修复、更主动地表达。你会觉得“没关系，我可以多做一点”。
-\n
-长期下来，你可能会累。不是不爱了，是有点失衡。所以给你的建议不是做得更多，而是偶尔停下来，看看她会不会主动走向你。你不需要一直做那个举灯的人，偶尔也可以站在光里，让她来找你。
-\n
-你已经很好了。接下来要学的，是接受被爱。`,
-        
-        '矛盾探索者': `你不是不想，是不知道该怎么办。这是你现在最真实的状态。你不是冷漠，你也不是不爱，你只是在“旧的模式不管用”和“新的模式还没学会”之间卡住了。
-\n
-你有时候能感觉到自己的情绪，有时候不能；你有时候能接住她的情绪，有时候会搞砸；你有时候想靠近她，有时候又想躲起来。这种矛盾让你很累，因为你自己都不知道下一秒会怎样。
-\n
-但我想告诉你：这个阶段本身就是改变的一部分。你不会从一个不会游泳的人突然变成救生员。你会先呛水、会慌乱、会想上岸。你现在就在这个“呛水”的阶段。这不丢人，这是必经之路。
-\n
-你可以先做一件事：不再要求自己“立刻做对”。允许自己笨拙，允许自己说错话。下次不知道该怎么回应时，就直接说：“我现在不太知道怎么接你的话，但我想陪着你。”这句话本身，就已经比90%的男性走得远了。`,
-        
-        '探索者': `你的画像还没有完全定型，这意味着你还在成长和变化的路上。
-\n
-关系中没有标准答案，也没有完美的出厂设置。重要的是你愿意停下来，花时间看自己——这件事本身，就已经比很多人勇敢了。你可以先从每天2分钟的“自我扫描”开始，慢慢练习看见自己的情绪。不需要改变，只需要看见。`
+        '全面冻结型': `你的情感世界像一座被冰封的湖面，表面平静，下面藏着很多没有说出口的情绪。\n\n你习惯用“忙起来”来应对一切——情绪来了就工作、打游戏、刷视频，总之不要停下来。这个本领是你从小练成的，也许是因为你见过身边的大人用沉默和忙碌处理一切，也许是因为你听过“男儿有泪不轻弹”。这套策略帮你活到了现在，但它有一个代价：你越来越听不见自己内心的声音。\n\n你可以从一件很小的事开始：下次感到烦躁时，不急着刷手机，先闭上眼睛10秒钟，问自己：“我现在身体哪个地方有感觉？”不需要答案，只是问。这一步，就已经是改变了。`,
+        '孤独的付出者': `你是那种“做得多，说得少”的人。你觉得自己已经扛起了很多——努力工作、照顾家庭、不出格、不摆烂，为什么她还是觉得不够？\n\n问题不在你做没做，而在“爱的翻译器”出了故障。你表达关心的方式是抄起工具箱：她一烦，你就开始分析、给方案、帮她解决。你觉得自己在爱她，但她接收到的信号是“我在被修理”。\n\n改变可以从一个很小的动作开始：下次她说“今天好累”，你先别急着说“那我帮你做”，试着先说一句“听起来你今天确实不容易”。就这一句话，你们之间的频道就开始接通了。`,
+        '孤独的阅读者': `你是少数能“读到”她情绪的男性。她脸上的微表情、语气里的变化、甚至沉默的不同类型，你都能分辨。这是很多人没有的天赋。\n\n但你的困境是：读到了，却不知道怎么回应。你像是一个听力极好的人，却不会说话。这不是你的错，是你从小到大没有人教过你“听见之后该怎么做”。\n\n你不需要成为情绪专家。你只需要做一件事：下次你读到她有情绪时，试着说出你读到的——“我感觉你今天有点累，是不是？”不解决，只是确认。你会发现，这个动作本身，就已经是爱了。`,
+        '未启程的旅人': `你是这几类中“基础最好”的人。你能识别自己的情绪，也能感知她的需要。按理说，你应该是关系中最游刃有余的那个。\n\n但你有一个自己都没意识到的坎：你不太确定自己为什么要在关系里。你觉得自己一个人也可以过得挺好，甚至有时候觉得关系是一种负担。\n\n你可以试着问自己一个不问“应该”的问题：如果抛开所有责任、别人的期待、年龄的压力，我想和另一个人一起做什么？找到那个微小的“想”，你就找到了出发的理由。`,
+        '责任型守护者': `你是关系里的“承重墙”。你扛起了经济、扛起了责任、扛起了“不让家人操心”。你是一个好丈夫、好父亲、好儿子——至少你自己是这样要求自己的。\n\n但你有过一个瞬间吗？半夜醒来，或者一个人开车的时候，心里会冒出一个很小很小的声音：“我快乐吗？”那个声音很快就被你压下去了——因为你想，快乐不重要，责任才重要。\n\n你可以给自己装一个补丁：每个月做一件“不为什么”的事——不是为了家庭、不是为了责任、不是为了面子，只是因为你想。你会发现，“想”和“应当”出来的爱，味道是不一样的。`,
+        '双向通达型': `你是少数已经走通这条路的人。你能看见自己的情绪，也能接住她的情绪；你爱一个人，不是因为她需要你，而是因为你想要靠近她。这非常难得。\n\n但我想提醒你一件事：走得顺的时候，最容易忽略的是“对方是不是也在用她的方式爱你”。因为你太会爱了，有时候你会不自觉地承担更多。\n\n给你的建议不是做得更多，而是偶尔停下来，看看她会不会主动走向你。你不需要一直做那个举灯的人，偶尔也可以站在光里，让她来找你。`,
+        '矛盾探索者': `你不是不想，是不知道该怎么办。这是你现在最真实的状态。你不是冷漠，你也不是不爱，你只是在“旧的模式不管用”和“新的模式还没学会”之间卡住了。\n\n你可以先做一件事：不再要求自己“立刻做对”。允许自己笨拙，允许自己说错话。下次不知道该怎么回应时，就直接说：“我现在不太知道怎么接你的话，但我想陪着你。”这句话本身，就已经比90%的男性走得远了。`,
+        '探索者': `你的画像还没有完全定型，这意味着你还在成长和变化的路上。\n\n你已经迈出了最重要的一步。接下来，你可以从每天2分钟的“自我扫描”开始，慢慢练习看见自己的情绪。不需要改变，只需要看见。`
     };
-    
     return summaries[personality] || summaries['矛盾探索者'];
 }
 
@@ -164,7 +108,12 @@ const SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
 
 async function fetchReport(code) {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/answers?code=eq.${encodeURIComponent(code)}`, {
+    let normalizedCode = code.trim().toUpperCase();
+    if (!normalizedCode.startsWith('REL-')) {
+        if (normalizedCode.startsWith('PRT-')) normalizedCode = normalizedCode.replace('PRT-', 'REL-');
+        else if (!normalizedCode.includes('-')) normalizedCode = 'REL-' + normalizedCode;
+    }
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/answers?code=eq.${encodeURIComponent(normalizedCode)}`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
     const data = await response.json();
@@ -176,7 +125,7 @@ function renderQuestions(answers) {
     let html = '';
     for (let i = 0; i < QUESTIONS.length; i++) {
         const q = QUESTIONS[i];
-        const answer = answers[i] || 3;
+        const answer = answers[i] !== undefined ? answers[i] : 3;
         const insight = getInsight(answer, q.dimension);
         html += `<div class="question-block">
             <div class="question-text">${q.id}. ${q.text}</div>
@@ -188,65 +137,53 @@ function renderQuestions(answers) {
 }
 
 document.getElementById('searchBtn').addEventListener('click', async () => {
-    const code = document.getElementById('reportCode').value.trim().toUpperCase();
-    if (!code) { document.getElementById('resultArea').innerHTML = '<div class="card">请输入报告编号</div>'; return; }
-    
+    const rawCode = document.getElementById('reportCode').value.trim();
+    if (!rawCode) {
+        document.getElementById('resultArea').innerHTML = '<div class="card error-box">请输入报告编号</div>';
+        return;
+    }
     document.getElementById('resultArea').innerHTML = '<div class="card loading">⏳ 正在查询报告...</div>';
-    const data = await fetchReport(code);
-    if (!data) { document.getElementById('resultArea').innerHTML = '<div class="card">❌ 未找到报告，请检查编号</div>'; return; }
-    
+    const data = await fetchReport(rawCode);
+    if (!data) {
+        document.getElementById('resultArea').innerHTML = `
+            <div class="error-box">
+                <div style="font-size:28px; margin-bottom:12px;">😢</div>
+                <div style="font-size:18px; font-weight:600; margin-bottom:8px;">未找到报告</div>
+                <div style="font-size:14px;">报告编号：<strong>${rawCode.toUpperCase()}</strong></div>
+                <div style="font-size:13px; margin-top:16px;">可能原因：编号输入错误或测试数据未保存成功</div>
+                <button class="btn-retry" onclick="location.reload()">重新查询</button>
+            </div>
+        `;
+        return;
+    }
     const answers = data.answers_json || [];
     const personality = data.personality || '探索者';
     const dim1 = data.dim1 || 0, dim2 = data.dim2 || 0, dim3 = data.dim3 || 0;
-    
+    const code = data.code;
     let html = `<div class="card">
-        <div class="tag" style="margin-bottom:8px;">${personality}</div>
+        <div class="tag">${personality}</div>
         <div class="flex-between">
             <div style="font-size:22px; font-weight:700;">📖 逐题深度解读</div>
             <button class="copy-btn" id="copyCodeBtn">📋 复制编号 ${code}</button>
         </div>
-        <div style="color:rgba(255,255,255,0.5); margin:8px 0 16px;">编号：${code}</div>
+        <div style="color:rgba(255,255,255,0.5); margin:8px 0;">编号：${code}</div>
         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
             <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">自我情绪 ${dim1}/40</span>
             <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">共情回应 ${dim2}/35</span>
             <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">爱的动力 ${dim3}/35</span>
         </div>`;
-    
     html += renderQuestions(answers);
-    
-    // 深度总结（500字）
-    const summary = getSummary(personality, dim1, dim2, dim3);
-    html += `<div class="card summary-card">
-        <div class="summary-title">📝 给你的深度总结</div>
-        <div class="summary-text">${summary.replace(/\n/g, '<br>')}</div>
-    </div>`;
-    
-    // 小红书求关注
-    html += `<div class="xhs-card">
-        <div style="font-size:24px; margin-bottom:8px;">📕</div>
-        <div style="font-weight:600;">如果这份报告对你有帮助</div>
-        <div style="font-size:14px; margin:8px 0;">欢迎关注小红书 <b style="color:#f0974a;">@关系实验室</b></div>
-        <div style="font-size:12px; color:rgba(255,255,255,0.5);">小红书号：9165138712</div>
-        <button class="btn-xhs" id="followXHSBtn">📋 复制编号，打开小红书</button>
-    </div>`;
-    
+    const summary = getSummary(personality);
+    html += `<div class="card summary-card"><div class="summary-title">📝 给你的深度总结</div><div class="summary-text">${summary.replace(/\n/g, '<br>')}</div></div>`;
+    html += `<div class="xhs-card"><div style="font-size:24px;">📕</div><div>如果这份报告对你有帮助</div><div>欢迎关注小红书 <b style="color:#f0974a;">@关系实验室</b></div><div>小红书号：9165138712</div><button class="btn-xhs" id="followXHSBtn">📋 复制编号，打开小红书</button></div>`;
     html += `</div>`;
     document.getElementById('resultArea').innerHTML = html;
-    
-    document.getElementById('copyCodeBtn')?.addEventListener('click', () => {
-        navigator.clipboard.writeText(code);
-        alert('✅ 报告编号已复制：' + code);
-    });
-    document.getElementById('followXHSBtn')?.addEventListener('click', () => {
-        navigator.clipboard.writeText(code);
-        alert('✅ 报告编号已复制\n\n请打开小红书，关注 @关系实验室\n小红书号：9165138712');
-        window.open('https://www.xiaohongshu.com/user/profile/9165138712', '_blank');
-    });
+    document.getElementById('copyCodeBtn')?.addEventListener('click', () => { navigator.clipboard.writeText(code); alert('✅ 已复制'); });
+    document.getElementById('followXHSBtn')?.addEventListener('click', () => { navigator.clipboard.writeText(code); alert('✅ 已复制，请打开小红书关注 @关系实验室'); window.open('https://www.xiaohongshu.com/user/profile/9165138712', '_blank'); });
 });
 
 const urlCode = new URLSearchParams(window.location.search).get('code');
-if (urlCode) document.getElementById('reportCode').value = urlCode;
-document.getElementById('searchBtn').click();
+if (urlCode) { document.getElementById('reportCode').value = urlCode; document.getElementById('searchBtn').click(); }
 </script>
 </body>
 </html>

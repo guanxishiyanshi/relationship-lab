@@ -42,7 +42,6 @@
 </div>
 <script src="questions.js"></script>
 <script>
-// ========== 全局变量 ==========
 var currentIndex = 0;
 var answers = new Array(questions.length).fill(3);
 var questionNumber = document.getElementById('questionNumber');
@@ -53,91 +52,62 @@ var prevBtn = document.getElementById('prevBtn');
 var nextBtn = document.getElementById('nextBtn');
 var progressFill = document.getElementById('progressFill');
 
-// ========== 保存进度到 localStorage ==========
 function saveProgress() {
-    var progress = {
-        answers: answers,
-        currentIndex: currentIndex,
-        timestamp: new Date().toISOString()
-    };
+    var progress = { answers: answers, currentIndex: currentIndex, timestamp: new Date().toISOString() };
     localStorage.setItem('relationship-lab-progress', JSON.stringify(progress));
-    console.log('💾 进度已保存', { currentIndex, answers: answers.slice(0, 5) + '...' });
+    console.log('💾 保存进度', { currentIndex, answersPreview: answers.slice(0,3) });
 }
 
-// ========== 加载进度 ==========
 function loadProgress() {
     var saved = localStorage.getItem('relationship-lab-progress');
-    if (saved) {
-        return JSON.parse(saved);
-    }
+    if (saved) return JSON.parse(saved);
     return null;
 }
 
-// 从结果页返回时清除旧进度
 if (document.referrer && document.referrer.includes('result.html')) {
     localStorage.removeItem('relationship-lab-progress');
-    console.log('🗑️ 从结果页返回，清除旧进度');
+    console.log('🗑️ 清除旧进度');
 }
 
-// 断点续答
 var savedProgress = loadProgress();
 if (savedProgress) {
     var shouldRestore = confirm('检测到上次未完成的测试，是否从中断处继续？');
     if (shouldRestore) {
         answers = savedProgress.answers;
         currentIndex = savedProgress.currentIndex;
-        console.log('🔄 恢复进度', { currentIndex, answersLength: answers.length });
+        console.log('🔄 恢复进度', currentIndex);
     } else {
         localStorage.removeItem('relationship-lab-progress');
     }
 }
 
-// ========== 更新提示文字 ==========
 function updateHint(value) {
-    var hintText = '';
-    if (value == 1) hintText = '完全不符合';
-    else if (value == 2) hintText = '不太符合';
-    else if (value == 3) hintText = '中等';
-    else if (value == 4) hintText = '比较符合';
-    else if (value == 5) hintText = '完全符合';
+    var hintText = value == 1 ? '完全不符合' : value == 2 ? '不太符合' : value == 3 ? '中等' : value == 4 ? '比较符合' : '完全符合';
     answerHint.textContent = '当前选择：' + hintText;
 }
 
-// ========== 渲染当前题目 ==========
 function renderQuestion() {
     var q = questions[currentIndex];
     var percent = ((currentIndex + 1) / questions.length) * 100;
     progressFill.style.width = percent + '%';
     questionNumber.textContent = '第 ' + (currentIndex + 1) + ' 题 / 共 ' + questions.length + ' 题';
     questionText.textContent = q.text;
-    
-    // 从 answers 数组中读取当前题目的答案
-    var currentAnswer = answers[currentIndex];
-    answerSlider.value = currentAnswer;
-    updateHint(currentAnswer);
-    
+    answerSlider.value = answers[currentIndex];
+    updateHint(answers[currentIndex]);
     prevBtn.disabled = (currentIndex === 0);
-    
-    if (currentIndex === questions.length - 1) {
-        nextBtn.textContent = '查看结果 →';
-    } else {
-        nextBtn.textContent = '下一题 →';
-    }
+    nextBtn.textContent = (currentIndex === questions.length - 1) ? '查看结果 →' : '下一题 →';
 }
 
-// ========== 监听滑块变化（实时更新 answers 数组）==========
 answerSlider.addEventListener('input', function() {
-    var newValue = parseInt(this.value);
-    answers[currentIndex] = newValue;
-    updateHint(newValue);
-    saveProgress();  // 每次滑动都保存
-    console.log('📝 第', currentIndex + 1, '题答案更新为', newValue);
+    var val = parseInt(this.value);
+    answers[currentIndex] = val;
+    updateHint(val);
+    saveProgress();
+    console.log('📝 第', currentIndex+1, '题答案更新为', val);
 });
 
-// ========== 上一题 ==========
 prevBtn.addEventListener('click', function() {
     if (currentIndex > 0) {
-        // 先保存当前答案
         answers[currentIndex] = parseInt(answerSlider.value);
         saveProgress();
         currentIndex--;
@@ -145,57 +115,36 @@ prevBtn.addEventListener('click', function() {
     }
 });
 
-// ========== 下一题 / 提交 ==========
 nextBtn.addEventListener('click', function() {
-    // 保存当前答案
     answers[currentIndex] = parseInt(answerSlider.value);
     saveProgress();
-    
     if (currentIndex < questions.length - 1) {
         currentIndex++;
         renderQuestion();
     } else {
-        // 最后一道题，计算得分并跳转
-        console.log('🎯 提交答案，最终 answers:', answers);
-        
-        // 计算三个维度的得分
-        var dim1Score = 0, dim2Score = 0, dim3Score = 0;
-        questions.forEach(function(q, index) {
-            var score = answers[index];
+        var dim1=0, dim2=0, dim3=0;
+        questions.forEach(function(q, idx) {
+            var score = answers[idx];
             if (q.reverse) score = 6 - score;
-            if (q.dimension === 1) dim1Score += score;
-            else if (q.dimension === 2) dim2Score += score;
-            else if (q.dimension === 3) dim3Score += score;
+            if (q.dimension === 1) dim1 += score;
+            else if (q.dimension === 2) dim2 += score;
+            else if (q.dimension === 3) dim3 += score;
         });
-        
-        var resultData = {
-            dim1: dim1Score,
-            dim2: dim2Score,
-            dim3: dim3Score,
-            timestamp: new Date().toISOString()
-        };
-        
-        // 保存结果到 localStorage
+        var resultData = { dim1: dim1, dim2: dim2, dim3: dim3, timestamp: new Date().toISOString() };
         localStorage.setItem('relationship-lab-result', JSON.stringify(resultData));
-        
-        // 同时保存 answers 数组供深度报告使用
         localStorage.setItem('relationship-lab-answers', JSON.stringify(answers));
-        
-        // 生成跳转 URL
-        var encoded = btoa(dim1Score + ',' + dim2Score + ',' + dim3Score);
+        var encoded = btoa(dim1 + ',' + dim2 + ',' + dim3);
         var params = new URLSearchParams(window.location.search);
         var partnerParam = params.get('partner');
         var resultUrl = 'result.html?scores=' + encoded;
         if (partnerParam) resultUrl += '&partner=' + encodeURIComponent(partnerParam);
-        
         console.log('🏁 跳转到结果页', resultUrl);
         window.location.href = resultUrl;
     }
 });
 
-// ========== 初始化 ==========
 renderQuestion();
-console.log('✅ 测试页面初始化完成，题目数量：', questions.length);
+console.log('✅ 男生版测试初始化完成，总题数:', questions.length);
 </script>
 </body>
 </html>

@@ -50,7 +50,6 @@
     <div class="card highlight"><div class="card-title" style="color:#f0974a;">🔍 核心发现</div><div class="card-text" id="core"></div></div>
     <div id="deepCard"></div>
 
-    <!-- 🔒 深度报告入口 -->
     <div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6); background:rgba(240,151,74,0.08);">
         <div class="card-title" style="color:#f0974a; font-size:18px;">🔒 完整深度报告（逐题解读）</div>
         <div class="card-text" style="margin-bottom:12px;">包含 <b>22 道题逐题分析</b> + 专属关系建议</div>
@@ -58,7 +57,6 @@
         <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">解锁码获取方式：关注小红书 @关系实验室</p>
     </div>
 
-    <!-- 小红书引流卡片 -->
     <div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6);">
         <div class="card-title" style="color:#f0974a;">📕 获取完整逐题解读</div>
         <div class="xhs-card">
@@ -194,27 +192,55 @@ try {
         currentReportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
         localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: currentReportCode, timestamp: Date.now()}));
     }
-    // 更新小红书卡片中的编号显示
     var codeSpan = document.getElementById('xhsCodeDisplay');
     if (codeSpan) codeSpan.textContent = currentReportCode;
 } catch(e) { console.log(e); }
 
+// ========== 强制保存到 Supabase ==========
 var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
 var reportCodeForSave = currentReportCode;
 
-(function saveToSupabase(){
-    var alreadySaved = localStorage.getItem('relationship-lab-data-saved');
-    if (alreadySaved === 'true') { console.log('数据已保存过，跳过'); return; }
-    try {
-        var savedProgress = localStorage.getItem('relationship-lab-progress');
-        var answersArray = savedProgress ? JSON.parse(savedProgress).answers : [];
-        fetch(SUPABASE_URL + '/rest/v1/answers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ code: reportCodeForSave, personality: personality, dim1: scores.dim1, dim2: scores.dim2, dim3: scores.dim3, dim4: 0, answers_json: answersArray })
-        }).then(function() { localStorage.setItem('relationship-lab-data-saved', 'true'); }).catch(function(e){ console.log('保存失败', e); });
-    } catch(e) { console.log(e); }
+(function saveToSupabase() {
+    var answersArray = null;
+    var savedAnswers = localStorage.getItem('relationship-lab-answers');
+    if (savedAnswers) {
+        answersArray = JSON.parse(savedAnswers);
+    } else {
+        var progress = localStorage.getItem('relationship-lab-progress');
+        if (progress) answersArray = JSON.parse(progress).answers;
+    }
+    if (!answersArray || answersArray.length === 0) {
+        console.log('⚠️ 无答案数据，跳过保存');
+        return;
+    }
+    fetch(SUPABASE_URL + '/rest/v1/answers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+            code: reportCodeForSave,
+            personality: personality,
+            dim1: scores.dim1,
+            dim2: scores.dim2,
+            dim3: scores.dim3,
+            dim4: 0,
+            answers_json: answersArray
+        })
+    })
+    .then(function(res) {
+        if (res.ok) {
+            console.log('✅ 男生版数据保存成功', reportCodeForSave);
+            localStorage.setItem('relationship-lab-data-saved', 'true');
+        } else {
+            console.error('❌ 保存失败', res.status);
+        }
+    })
+    .catch(function(e) { console.error('保存异常', e); });
 })();
 
 window.addEventListener('DOMContentLoaded', function() {
@@ -272,7 +298,7 @@ document.getElementById('aboutCard').onclick = function(){
     overlay.innerHTML = '<div class="modal-box" style="text-align:left; max-height:80vh; overflow-y:auto; max-width:380px;">'+
         '<div class="modal-icon">✉️</div><div class="modal-title">关于这份量表</div>'+
         '<div class="modal-desc" style="line-height:1.9; font-size:14px;">'+
-        '<p>我不是做心理学的，就是一个普通人。</p><p>我自己就是这份量表的第一批用户——测出来是<b>"矛盾探索者"</b>。</p>'+
+        '<p>我不是做心理学的，就是一个普通人。</p><p>我自己就是这份量表的第一批用户。</p>'+
         '<p style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);"><b>关于「关系实验室」</b></p>'+
         '<p>"关系实验室"这个名字，就是我们想做的事——关系不是天生的，是在一次次的笨拙尝试和真实的反馈里，慢慢学会的。</p>'+
         '<p style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);"><b>关于两只吉祥物</b></p>'+
