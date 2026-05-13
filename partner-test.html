@@ -58,6 +58,10 @@ function loadProgress() {
     if (saved) { return JSON.parse(saved); }
     return null;
 }
+// 如果是从结果页点"重新测试"过来的，清除旧进度
+if (document.referrer && document.referrer.includes('result.html')) {
+    localStorage.removeItem('relationship-lab-progress');
+}
 var savedProgress = loadProgress();
 if (savedProgress) {
     var shouldRestore = confirm('检测到上次未完成的测试，是否从中断处继续？');
