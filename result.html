@@ -40,26 +40,21 @@
 
 <div class="container" id="report">
 
-    <!-- 画像头部 -->
     <div class="tag" id="tag">...</div>
     <div class="main-title" id="title">...</div>
     <div class="main-subtitle" id="subtitle">...</div>
 
-    <!-- 雷达图 -->
     <div class="radar-box"><div id="radarChart"></div></div>
 
-    <!-- 三个维度 -->
     <div class="card"><div class="card-title" style="color:#f0974a;">维度一：自我情绪</div><div class="card-text" id="dim1Text"></div></div>
     <div class="card"><div class="card-title" style="color:#f0974a;">维度二：共情回应</div><div class="card-text" id="dim2Text"></div></div>
     <div class="card"><div class="card-title" style="color:#f0974a;">维度三：爱的动力</div><div class="card-text" id="dim3Text"></div></div>
 
-    <!-- 综合结论 -->
     <div class="card highlight"><div class="card-title" style="color:#f0974a;">🔍 核心发现</div><div class="card-text" id="core"></div></div>
 
-    <!-- 直击内心的一道题 -->
     <div id="deepCard"></div>
 
-    <!-- 🔒 深度报告入口（带锁） -->
+    <!-- 🔒 深度报告入口 -->
     <div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6); background:rgba(240,151,74,0.08);">
         <div class="card-title" style="color:#f0974a; font-size:18px;">🔒 完整深度报告（逐题解读）</div>
         <div class="card-text" style="margin-bottom:12px;">
@@ -71,14 +66,12 @@
         </p>
     </div>
 
-    <!-- 创作者故事入口 -->
     <div class="card" style="text-align:center; cursor:pointer;" id="aboutCard">
         <div style="font-size:32px; margin-bottom:8px;">🐰🐲</div>
         <div class="card-title" style="color:#f0974a;">"我兔了"和"你龙么"是怎么来的？</div>
         <div class="card-text" style="color:rgba(255,255,255,0.5);">看看创作者的故事</div>
     </div>
 
-    <!-- 底部按钮 -->
     <div class="btn-row">
         <button class="btn btn-ghost" onclick="window.location.href='test.html'">重新测试</button>
         <button class="btn btn-orange" id="saveBtn">保存结果</button>
@@ -170,7 +163,7 @@ else if(scores.dim3/35===minDim && l3==='低') coreText += '<br><br>但你的爱
 else coreText += '<br><br>你已经意识到了问题，愿意面对自己——这就是最大的优势。';
 document.getElementById('core').innerHTML = coreText;
 
-// ========== 雷达图 ==========
+// 雷达图
 var chart = echarts.init(document.getElementById('radarChart'));
 chart.setOption({
     radar:{center:['50%','50%'],radius:'70%',indicator:[{name:'自我情绪',max:40},{name:'共情回应',max:40},{name:'爱的动力',max:40}],axisName:{color:'rgba(255,255,255,0.7)',fontSize:13},splitArea:{areaStyle:{color:['rgba(240,151,74,0.05)','rgba(240,151,74,0.1)']}},splitLine:{lineStyle:{color:'rgba(255,255,255,0.15)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,0.2)'}}},
@@ -178,7 +171,7 @@ chart.setOption({
 });
 window.addEventListener('resize', function(){ chart.resize(); });
 
-// ========== 直击内心的一道题 ==========
+// 直击内心题
 (function(){
     try {
         var ua = JSON.parse(localStorage.getItem('relationship-lab-progress')).answers;
@@ -203,60 +196,37 @@ window.addEventListener('resize', function(){ chart.resize(); });
     }
 })();
 
-// ========== 生成报告编号 ==========
+// ========== 生成/获取报告编号（防重复核心）==========
 try {
-    var savedResult = localStorage.getItem('relationship-lab-result');
-    if (savedResult) {
-        var storedCode = localStorage.getItem('relationship-lab-report-code');
-        if (storedCode) {
-            currentReportCode = JSON.parse(storedCode).code;
-        } else {
-            currentReportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-            localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: currentReportCode, timestamp: Date.now()}));
-        }
+    // 先检查 localStorage 是否已有 code
+    var storedCode = localStorage.getItem('relationship-lab-report-code');
+    if (storedCode) {
+        currentReportCode = JSON.parse(storedCode).code;
+        console.log('使用已有报告编号:', currentReportCode);
+    } else {
+        currentReportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: currentReportCode, timestamp: Date.now()}));
+        console.log('生成新报告编号:', currentReportCode);
     }
 } catch(e) { console.log(e); }
 
-// ========== 解锁深度报告（关键修复：确保按钮能点击）==========
-// 使用 window.onload 或延迟绑定确保 DOM 已加载
-window.addEventListener('DOMContentLoaded', function() {
-    var unlockBtn = document.getElementById('unlockDeepReportBtn');
-    if (unlockBtn) {
-        unlockBtn.onclick = function() {
-            // 🔑 预设解锁码（付费后告诉用户这个数字）
-            var UNLOCK_CODE = '2025';  // ⚠️ 你可以改成任意数字/字符串
-            
-            var inputCode = prompt('🔒 请输入解锁码（付费后获得）\n\n解锁码获取方式：微信支付 9.9 元后，联系 wotule_nilongme@163.com 获取');
-            
-            if (inputCode === UNLOCK_CODE) {
-                // 获取或生成报告编号
-                var reportCode = currentReportCode;
-                if (!reportCode) {
-                    reportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-                    try {
-                        localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: reportCode, timestamp: Date.now()}));
-                    } catch(e) {}
-                }
-                // 跳转到深度报告页面
-                window.location.href = 'deep-report.html?code=' + reportCode + '&unlock=paid';
-            } else if (inputCode !== null && inputCode !== '') {
-                alert('❌ 解锁码错误\n\n请确认后重新输入，或联系 wotule_nilongme@163.com 获取正确解锁码');
-            }
-        };
-    } else {
-        console.log('未找到 unlockDeepReportBtn 按钮');
-    }
-});
-
-// ========== 保存数据到 Supabase ==========
+// ========== 保存数据到 Supabase（防重复）==========
 var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
-var reportCodeForSave = currentReportCode || ('REL-' + Math.random().toString(36).substring(2, 6).toUpperCase());
+var reportCodeForSave = currentReportCode;
 
 (function saveToSupabase(){
+    // 🔑 关键：先检查是否已经保存过这条数据
+    var alreadySaved = localStorage.getItem('relationship-lab-data-saved');
+    if (alreadySaved === 'true') {
+        console.log('数据已保存过，跳过重复提交');
+        return;
+    }
+    
     try {
         var savedProgress = localStorage.getItem('relationship-lab-progress');
         var answersArray = savedProgress ? JSON.parse(savedProgress).answers : [];
+        
         fetch(SUPABASE_URL + '/rest/v1/answers', {
             method: 'POST',
             headers: {
@@ -274,16 +244,39 @@ var reportCodeForSave = currentReportCode || ('REL-' + Math.random().toString(36
                 dim4: 0,
                 answers_json: answersArray
             })
+        }).then(function() {
+            // 保存成功后标记，防止重复
+            localStorage.setItem('relationship-lab-data-saved', 'true');
+            console.log('数据保存成功');
         }).catch(function(e){ console.log('保存失败', e); });
-        
-        if (!localStorage.getItem('relationship-lab-report-code')) {
-            localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: reportCodeForSave, timestamp: Date.now()}));
-            currentReportCode = reportCodeForSave;
-        }
     } catch(e) { console.log(e); }
 })();
 
-// ========== 保存结果图片 ==========
+// ========== 解锁深度报告 ==========
+window.addEventListener('DOMContentLoaded', function() {
+    var unlockBtn = document.getElementById('unlockDeepReportBtn');
+    if (unlockBtn) {
+        unlockBtn.onclick = function() {
+            var UNLOCK_CODE = '2025';
+            var inputCode = prompt('🔒 请输入解锁码（付费后获得）\n\n解锁码获取方式：微信支付 9.9 元后，联系 wotule_nilongme@163.com 获取');
+            
+            if (inputCode === UNLOCK_CODE) {
+                var reportCode = currentReportCode;
+                if (!reportCode) {
+                    reportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+                    try {
+                        localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: reportCode, timestamp: Date.now()}));
+                    } catch(e) {}
+                }
+                window.location.href = 'deep-report.html?code=' + reportCode + '&unlock=paid';
+            } else if (inputCode !== null && inputCode !== '') {
+                alert('❌ 解锁码错误\n\n请确认后重新输入，或联系 wotule_nilongme@163.com 获取正确解锁码');
+            }
+        };
+    }
+});
+
+// 保存结果图片
 document.getElementById('saveBtn').onclick = function(){
     var btn = this;
     btn.textContent = '生成中...';
@@ -301,7 +294,7 @@ document.getElementById('saveBtn').onclick = function(){
     });
 };
 
-// ========== 分享链接（双人报告） ==========
+// 分享链接
 var shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3;
 var shareEncoded = btoa(encodeURIComponent(shareData));
 var shareUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=' + shareEncoded;
@@ -316,7 +309,7 @@ document.getElementById('shareBtn').onclick = function(){
     });
 };
 
-// ========== 关于这份量表 ==========
+// 关于卡片
 document.getElementById('aboutCard').onclick = function(){
     var overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
