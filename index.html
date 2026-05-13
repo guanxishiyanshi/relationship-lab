@@ -31,5 +31,32 @@
         <div style="margin-top: 8px; font-size: 16px; color: rgba(255,255,255,0.4);">或</div>
         <button class="start-btn" style="background:linear-gradient(135deg,#e05a8a,#c04a6a); box-shadow:0 8px 20px rgba(224,90,138,0.3);" onclick="window.location.href='partner-test.html'">女生入口</button>
     </div>
+
+<script>
+document.querySelectorAll('.start-btn').forEach(function(btn) {
+    btn.onclick = function(e) {
+        e.preventDefault();
+        var target = this.getAttribute('onclick').match(/location\.href='(.+?)'/)[1];
+        var type = target.includes('partner') ? '女生版' : '男生版';
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        overlay.innerHTML = '<div style="background:#1a2a4a;border-radius:20px;padding:28px 24px;margin:16px;max-width:320px;text-align:center;border:1px solid rgba(255,255,255,0.1);">' +
+            '<div style="font-size:40px;margin-bottom:12px;">' + (type === '男生版' ? '🧑' : '👩') + '</div>' +
+            '<div style="font-size:20px;font-weight:700;margin-bottom:8px;color:#fff;">进入' + type + '</div>' +
+            '<div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:24px;line-height:1.6;">' +
+            (type === '男生版' ? '22道题 · 约3分钟<br>测测你的情感出厂设置' : '40道题 · 约5分钟<br>测测你的爱的接收模式') +
+            '<br><span style="font-size:11px;color:rgba(255,255,255,0.35);">⚠️ 本测试仅为个人反思工具<br>不构成心理诊断，不可替代专业咨询</span>' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:10px;">' +
+            '<button id="confirmBtn" style="padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,' + (type === '男生版' ? '#f0974a,#e05a2a' : '#e05a8a,#c04a6a') + ');color:#fff;">开始测试</button>' +
+            '<button id="cancelBtn" style="padding:14px;border-radius:12px;border:none;font-size:16px;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">取消</button>' +
+            '</div></div>';
+        document.body.appendChild(overlay);
+        document.getElementById('confirmBtn').onclick = function() { window.location.href = target; };
+        document.getElementById('cancelBtn').onclick = function() { overlay.remove(); };
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    };
+});
+</script>
 </body>
 </html>
