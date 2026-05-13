@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>完整深度报告 · 已解锁</title>
+    <title>完整深度报告 · 情感出厂设置</title>
     <style>
         body { margin:0; padding:16px; background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
         .container { max-width:420px; margin:0 auto; padding-bottom:40px; }
@@ -15,12 +15,18 @@
         h1 { font-size:28px; margin-bottom:8px; }
         .subtitle { font-size:14px; color:rgba(255,255,255,0.5); margin-bottom:24px; }
         .btn { display:block; width:100%; padding:16px; border-radius:12px; border:none; font-size:18px; font-weight:600; cursor:pointer; text-align:center; margin-top:24px; background:linear-gradient(135deg,#ff6b35,#f0974a); color:#fff; }
-        .locked-badge { background:rgba(240,151,74,0.2); border-radius:20px; padding:8px 16px; font-size:14px; display:inline-block; margin-bottom:16px; }
         .loading { text-align:center; padding:60px 0; font-size:18px; color:rgba(255,255,255,0.6); }
         .insight-quote { font-style:italic; border-left:3px solid #f0974a; padding-left:16px; margin:16px 0; color:rgba(255,255,255,0.7); }
         .tip-badge { background:rgba(240,151,74,0.2); border-radius:20px; padding:4px 12px; font-size:12px; display:inline-block; margin-bottom:8px; }
         ul, ol { padding-left:20px; margin:8px 0; }
         li { margin:8px 0; line-height:1.5; }
+        .code-input-group { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+        .code-input-group input { flex:2; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-size:14px; outline:none; }
+        .code-input-group input::placeholder { color:rgba(255,255,255,0.4); }
+        .code-input-group button { flex:1; padding:12px; border-radius:12px; border:none; background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+        .copy-btn { background:rgba(240,151,74,0.2); border:1px solid #f0974a; border-radius:20px; padding:6px 14px; font-size:13px; color:#f0974a; cursor:pointer; transition:0.2s; display:inline-block; margin-left:12px; }
+        .copy-btn:hover { background:rgba(240,151,74,0.4); }
+        .flex-between { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
     </style>
 </head>
 <body>
@@ -54,12 +60,14 @@
         var d = data[0];
         var answers = d.answers_json || [];
         var personality = d.personality || '探索者';
-        var isPartner = (d.dim4 !== undefined);
         
         // 构建完整 HTML
         var html = '';
-        html += '<div class="tag">' + personality + '</div>';
-        html += '<h1>📖 完整深度报告</h1>';
+        html += '<div class="tag" style="margin-bottom:8px;">' + personality + '</div>';
+        html += '<div class="flex-between">';
+        html += '<h1 style="margin:0;">📖 完整深度报告</h1>';
+        html += '<button class="copy-btn" id="copyCodeBtn">📋 复制编号 ' + code + '</button>';
+        html += '</div>';
         html += '<div class="subtitle">编号：' + code + ' · 报告生成时间：' + new Date().toLocaleString() + '</div>';
         
         // ========== 解锁状态提示 ==========
@@ -71,20 +79,11 @@
         }
         
         // ========== 1. 得分总览 ==========
-        if (isPartner) {
-            html += '<div class="card"><div class="card-title">📊 你的四维度得分</div><div class="card-text">';
-            html += '<b>🔹 维度一 · 对他沉默的解读：</b>' + d.dim1 + '/50<br>';
-            html += '<b>🔹 维度二 · 表达需求的清晰度：</b>' + d.dim2 + '/50<br>';
-            html += '<b>🔹 维度三 · 对"被爱"的感知：</b>' + d.dim3 + '/50<br>';
-            html += '<b>🔹 维度四 · 冲突后的修复：</b>' + d.dim4 + '/50';
-            html += '</div></div>';
-        } else {
-            html += '<div class="card"><div class="card-title">📊 你的三维度得分</div><div class="card-text">';
-            html += '<b>🔹 维度一 · 自我情绪的识别与接纳：</b>' + d.dim1 + '/40<br>';
-            html += '<b>🔹 维度二 · 共情与情感回应：</b>' + d.dim2 + '/35<br>';
-            html += '<b>🔹 维度三 · 爱的动机与内在驱动力：</b>' + d.dim3 + '/35';
-            html += '</div></div>';
-        }
+        html += '<div class="card"><div class="card-title">📊 你的三维度得分</div><div class="card-text">';
+        html += '<b>🔹 维度一 · 自我情绪的识别与接纳：</b>' + d.dim1 + '/40<br>';
+        html += '<b>🔹 维度二 · 共情与情感回应：</b>' + d.dim2 + '/35<br>';
+        html += '<b>🔹 维度三 · 爱的动机与内在驱动力：</b>' + d.dim3 + '/35';
+        html += '</div></div>';
         
         // ========== 2. 题目得分分析 ==========
         if (answers.length > 0) {
@@ -107,150 +106,57 @@
             html += '</div></div>';
         }
         
-        // ========== 3. 深度心理解读（核心部分，详细且个性化）==========
+        // ========== 3. 深度心理解读 ==========
         html += '<div class="card"><div class="card-title">🧠 深度心理解读</div><div class="card-text">';
-        
-        if (isPartner) {
-            // ---------- 女生版详细解读 ----------
-            var dim1 = d.dim1, dim2 = d.dim2, dim3 = d.dim3, dim4 = d.dim4;
-            html += '<p>你的测试结果揭示了你在亲密关系中 <b>“接收与表达爱的方式”</b>。以下是针对你每个维度的详细分析：</p>';
-            
-            // 维度一：沉默解读
-            html += '<b>📌 维度一 · 对他沉默的解读（' + dim1 + '/50）</b><br>';
-            if (dim1 >= 38) {
-                html += '你对他的沉默非常敏感，容易把安静解读为疏远或不满。这可能与你过去的经历有关——比如小时候家里有人生气就不说话，让你形成了“安静=危险”的条件反射。<br><br>';
-                html += '<div class="insight-quote">你可以试着在内心按下暂停键：他的沉默，80%的时候真的只是“累了”或“在想事情”，不是针对你。给自己10分钟，不急着追问。</div>';
-            } else if (dim1 <= 20) {
-                html += '你不太会把他的沉默当成压力，能够给他留出空间，这一般意味着你对关系有较高的安全感。你相信即使暂时不说话，连接也还在。<br><br>';
-                html += '<div class="insight-quote">你在这方面的松弛感正是很多女生羡慕的能力。不过偶尔可以主动问一句：“你在想什么吗？”，让他感受到你的关注。</div>';
-            } else {
-                html += '你有时能分辨沉默的类型，有时会多想，这是大多数人的状态。你可能经历过“猜对了”也经历过“猜错了”，所以现在处于一种谨慎的平衡中。<br><br>';
-                html += '<div class="insight-quote">下次再感到不安时，试着用“我注意到你很安静，是心情不好还是只是需要休息？”代替“你怎么了”。前者的回答率会高很多。</div>';
-            }
-            
-            // 维度二：需求表达
-            html += '<br><b>📌 维度二 · 表达需求的清晰度（' + dim2 + '/50）</b><br>';
-            if (dim2 >= 38) {
-                html += '你的表达常常是“加密”的。你嘴上说“没事”，心里希望他能自己发现你的不开心。但这种加密信号，大部分男性真的收不到——不是他不关心，是他的解码器没有这个功能。<br><br>';
-                html += '<div class="insight-quote">下回你可以尝试把“没事”换成“我有点不开心，但还没想好怎么说，等我一下好吗？”——既表达了需求，也给了自己缓冲。</div>';
-            } else if (dim2 <= 20) {
-                html += '你能直接表达自己的需求，比如“我需要你陪我看会儿电视”或“我今天很累，你洗碗好吗”。这种清晰度能极大降低沟通成本，让关系更顺畅。<br><br>';
-                html += '<div class="insight-quote">你已经掌握了关系中最高效的沟通方式。唯一的提醒是：直接不等于生硬，温柔地直接是最好的。</div>';
-            } else {
-                html += '你多数时候能说清需求，但压力下还是会选择绕弯子。你可能经历过“直接说了也没用”的时刻，所以学会了先用试探。<br><br>';
-                html += '<div class="insight-quote">你可以先从小事练习直接表达，比如“今天你来做饭好不好”，观察他的反应，慢慢建立“直接说是有用的”安全体验。</div>';
-            }
-            
-            // 维度三：爱意感知
-            html += '<br><b>📌 维度三 · 对“被爱”的感知（' + dim3 + '/50）</b><br>';
-            if (dim3 >= 38) {
-                html += '你对爱的感知方式比较固定，需要特定的信号才能确认被爱（比如言语、陪伴、肢体接触）。如果他用了其他方式（比如努力工作、修东西），你可能感受不到。<br><br>';
-                html += '<div class="insight-quote">你可以做一件事：写下来你最喜欢的一种被爱的方式，然后告诉他。这不是“教他”，是帮他更好地爱你。</div>';
-            } else if (dim3 <= 20) {
-                html += '你的爱意接收器很灵活，能从多种行为中解读出爱。哪怕他嘴上不说，他为你做的一顿饭、修好的一盏灯，你都能接收到。<br><br>';
-                html += '<div class="insight-quote">你这种能力是关系中非常宝贵的“翻译官”。同时你也可以适当说出来：“你刚刚……让我觉得被爱”，他会更愿意重复做那件事。</div>';
-            } else {
-                html += '你能从多种方式感知爱，但有自己的偏好。你既期待言语的确认，也能看见行动中的在意。<br><br>';
-                html += '<div class="insight-quote">你可以给他一个“爱的信号清单”：什么行为对你来说代表爱（比如一句鼓励、一次拥抱），他会更清楚该往哪个方向努力。</div>';
-            }
-            
-            // 维度四：冲突修复
-            html += '<br><b>📌 维度四 · 冲突后的修复（' + dim4 + '/50）</b><br>';
-            if (dim4 >= 38) {
-                html += '你在冲突后需要完整的对话才能感到安全。“翻篇”对你来说不够，你需要确认“我们真的好了”。这可能是因为你害怕问题被掩盖，下次会爆发得更严重。<br><br>';
-                html += '<div class="insight-quote">下次吵完架，等他冷静后你可以说：“我需要一个明确的信号知道我们和好了，比如你牵一下我的手。”给他一个具体可操作的指令。</div>';
-            } else if (dim4 <= 20) {
-                html += '你们之间的冲突对你来说不是大问题。你有自己的恢复方式，不依赖他先开口。这种能力让你在关系中更有主动性，不容易被动等待。<br><br>';
-                html += '<div class="insight-quote">你是那个可以主动破冰的人。但也要留意：如果他总是等你先开口，你可以偶尔停下来，看看他会不会主动走向你。</div>';
-            } else {
-                html += '你能接受不同的修复节奏，但有时会等太久，心里暗暗希望他先开口。你可能习惯了做关系中更主动的一方。<br><br>';
-                html += '<div class="insight-quote">可以尝试一个约定：不管谁先开口，和好后都做一个象征性动作（比如碰一下手），表示“翻篇了”。</div>';
-            }
-            
-        } else {
-            // ---------- 男生版详细解读 ----------
-            var dim1 = d.dim1, dim2 = d.dim2, dim3 = d.dim3;
-            html += '<p>你的测试结果揭示了你在亲密关系中 <b>“情感出厂设置”</b>。以下是针对你每个维度的详细分析：</p>';
-            
-            // 维度一：自我情绪
-            html += '<b>📌 维度一 · 自我情绪的识别与接纳（' + dim1 + '/40）</b><br>';
-            if (dim1 >= 28) {
-                html += '你习惯用“做事”来逃避情绪。烦躁的时候，你的第一反应是打游戏、工作、刷视频，让自己忙起来。这像是某种祖传的男性技能——但情绪不是敌人，它只是身体里的一封来信。<br><br>';
-                html += '<div class="insight-quote">你不需要立刻分析它。只是停下来，问自己一句：“我现在的身体是什么感觉？”胸口闷吗？喉咙堵吗？看见它，就已经是改变了。</div>';
-            } else if (dim1 <= 17) {
-                html += '你能识别自己的情绪，也允许自己偶尔低落。这对男性来说是很难得的能力——你没有把“像个男人”和“不能有情绪”画等号。<br><br>';
-                html += '<div class="insight-quote">你已经拥有很多男性缺失的“情绪语言”。你可以试着把这套语言用在关系里，她其实很想听你说“我今天有点累”。</div>';
-            } else {
-                html += '你有时能感觉到自己不对劲，但很难立刻说清是什么。压力大的时候，你还是会选择先做事，等忙完了再说。这不是缺点，只是你还没学会“暂停”。<br><br>';
-                html += '<div class="insight-quote">试着每天花2分钟闭眼问自己：“现在飘过我脑子里最明显的一种感觉是什么？”不评判，只是命名。这是最容易开始的练习。</div>';
-            }
-            
-            // 维度二：共情回应
-            html += '<br><b>📌 维度二 · 共情与情感回应（' + dim2 + '/35）</b><br>';
-            if (dim2 >= 28) {
-                html += '你最擅长的是“解决问题”。当她情绪低落时，你第一反应是分析原因、给建议、想办法。但她要的可能不是这些——她只是想说一说，被你听见。<br><br>';
-                html += '<div class="insight-quote">下次她说“今天好烦”，你可以先说一句：“听起来你今天确实不容易，想跟我说说吗？”先用这句话代替你的工具箱。</div>';
-            } else if (dim2 <= 17) {
-                html += '你能分辨她什么时候需要倾听，什么时候需要建议。这是很多男性花很多年才能学会的能力。你的共情能力是你的核心优势之一。<br><br>';
-                html += '<div class="insight-quote">你已经做得很好了。唯一可以继续发挥的是：偶尔主动问她“你需要什么，还是只是想说？”这样可以更精准地回应。</div>';
-            } else {
-                html += '你有时候能接住她的情绪，有时候不自觉地开始解决问题。你正在新旧模式之间切换，这已经很不容易了。<br><br>';
-                html += '<div class="insight-quote">你可以给自己设一个简单规则：每次她倾诉的头3分钟，只点头、说“嗯”，不提建议。3分钟后再问：“你想听我分析，还是继续听你说？”</div>';
-            }
-            
-            // 维度三：爱的动机
-            html += '<br><b>📌 维度三 · 爱的动机与内在驱动力（' + dim3 + '/35）</b><br>';
-            if (dim3 >= 28) {
-                html += '你的驱动力更多来自“责任”而不是“渴望”。你觉得应该养家、应该做好丈夫的角色、应该不要让她失望。但“应该”像燃料，走得久了会累。<br><br>';
-                html += '<div class="insight-quote">找一个安静的时间，问自己一个不问“应该”的问题：“如果不考虑任何人的期待，我想和她一起做什么？”哪怕很小的事，把它做一次。</div>';
-            } else if (dim3 <= 17) {
-                html += '你的爱的动力来自内心深处。你靠近她是因为你想，不是因为你怕孤单或应该结婚。这种“主动的爱”是关系中最温暖的燃料。<br><br>';
-                html += '<div class="insight-quote">你这份纯粹的渴望是你们关系中最珍贵的部分。别忘了也让她知道——偶尔告诉她：“我今天就是想和你待一会儿，没什么特别原因。”</div>';
-            } else {
-                html += '你内心有渴望，但常被现实和责任压住。你偶尔会想“我们之间还有那种心动吗”，但很快又会想“还是先把日子过好吧”。<br><br>';
-                html += '<div class="insight-quote">你可以试着创造一些“不为什么”的时刻——比如不带目的地去看场电影，或者周末一起去一个没去过的地方。不需要很多，一个月一次就够。</div>';
-            }
-        }
-        
-        html += '<div class="insight-quote">无论你的得分如何，这份报告的目的不是给你贴标签，而是帮你看见：你已经走得比大多数人远了。愿意停下来看自己的人，才是真正的强者。</div>';
+        html += '<p>你的测试结果揭示了你在亲密关系中 <b>“情感出厂设置”</b>。</p>';
+        html += '<p><b>📌 自我情绪</b>：' + (d.dim1 >= 28 ? '你习惯用做事逃避情绪，很少停下来问自己怎么了。' : (d.dim1 <= 17 ? '你能识别自己的情绪，这是很多男性缺失的能力。' : '你有时能觉察情绪，有时还是会逃避。')) + '</p>';
+        html += '<p><b>📌 共情回应</b>：' + (d.dim2 >= 28 ? '你擅长解决问题而非倾听，给的关心常常不是她想要的。' : (d.dim2 <= 17 ? '你的共情能力不错，能分辨她需要倾听还是建议。' : '你有时能倾听，有时不自觉地开始分析。')) + '</p>';
+        html += '<p><b>📌 爱的动力</b>：' + (d.dim3 >= 28 ? '你的驱动力更多来自责任，而不是内心真实的渴望。' : (d.dim3 <= 17 ? '你的爱来自内心渴望，不是被推着走。' : '你内心有渴望，但也容易被责任淹没。')) + '</p>';
+        html += '<div class="insight-quote">无论你的得分如何，这份报告的目的不是给你贴标签，而是帮你看见自己。你已经走得比大多数人远了。</div>';
         html += '</div></div>';
         
         // ========== 4. 专属行动建议 ==========
         html += '<div class="card"><div class="card-title">🚀 3 条可立刻行动的建议</div><div class="card-text">';
-        if (isPartner) {
-            html += '<ol>';
-            html += '<li><b>建立“沉默信号”约定</b>：找个平静的时刻告诉他：“如果你只是需要安静，可以跟我说‘我想自己待半小时’，我就不打扰你。如果是生我的气，也直接说。这样我就不用猜了。”</li>';
-            html += '<li><b>把“抱怨”换成“请求”</b>：下次想发牢骚时，先深呼吸，试着说：“我需要你帮忙……”而不是“你从来不……”。前者指向解决，后者指向指责。</li>';
-            html += '<li><b>开启“爱的语言”对话</b>：一起做这个小练习：各自写下来三种“什么行为让你感觉被爱”，然后交换看。你会发现很多误解其实只是“频道不同”。</li>';
-            html += '</ol>';
-        } else {
-            html += '<ol>';
-            html += '<li><b>每天2分钟自我扫描</b>：睡前闭眼，从头顶到脚底扫描一遍身体，问自己：“哪个部位有感觉？那可能是什么情绪？”不解决，只是看见。</li>';
-            html += '<li><b>开启“她需要什么”的探针</b>：下次她情绪不好，先问一句：“你想让我听，还是想一起想办法？”这句话可以拯救你80%的无效安慰。</li>';
-            html += '<li><b>创造一次“无目的约会”</b>：约她去做一件“没有意义”的事——比如坐在公园长椅上看半小时人、去书店各自挑一本书。不谈孩子、不谈钱、不谈父母，只是你们俩。</li>';
-            html += '</ol>';
-        }
-        html += '<p style="margin-top:12px;">✨ 改变从来不是一夜之间，但每一次微小的练习，都会让你们的关系多一盏灯。</p>';
+        html += '<ol><li><b>每天2分钟自我扫描</b>：睡前闭眼问自己“我现在是什么感觉？”不评判，只是看见。</li>';
+        html += '<li><b>开启“她需要什么”的探针</b>：她情绪不好时先问“你想让我听，还是想一起想办法？”</li>';
+        html += '<li><b>创造一次“无目的约会”</b>：不谈孩子、不谈钱，只是你们俩，找回连接的初心。</li></ol>';
         html += '</div></div>';
         
-        // ========== 5. 付费状态处理 ==========
+        // ========== 5. 逐题解读入口（输入编号跳转新页面）==========
+        html += '<div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6); background:rgba(240,151,74,0.08);">';
+        html += '<div class="card-title" style="color:#f0974a;">📝 查看每道题的逐题解读</div>';
+        html += '<div class="card-text" style="margin-bottom:12px;">';
+        html += '想看每一道题<strong>你选了哪个答案、为什么、怎么调整</strong>？<br>';
+        html += '输入你的报告编号，进入逐题解读页面。';
+        html += '</div>';
+        html += '<div class="code-input-group">';
+        html += '<input type="text" id="inputReportCode" placeholder="例如: ' + code + '" value="' + code + '">';
+        html += '<button id="gotoViewReportBtn">📖 进入逐题解读 →</button>';
+        html += '</div>';
+        html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">';
+        html += '逐题解读页面会显示每道题的原文、你的答案和个性化分析。<br>';
+        html += (isPaid ? '✅ 你已付费，进入后可直接查看全部22道题。' : '🔒 未付费用户只能看到前3题预览，付费后输入解锁码可查看全部。');
+        html += '</p>';
+        html += '</div>';
+        
+        // ========== 6. 付费状态处理 ==========
         if (!isPaid) {
             html += '<div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6); background:rgba(240,151,74,0.08);">';
             html += '<div class="card-title" style="color:#f0974a;">🔓 解锁完整逐题解读</div>';
-            html += '<div class="card-text" style="margin-bottom:12px;">当前显示摘要版。<br>完整版包含<b>每道题的详细分析</b> + 个性化行动指南（约3000字）。</div>';
+            html += '<div class="card-text" style="margin-bottom:12px;">当前显示摘要版。<br>完整版包含<b>22道题的详细分析</b> + 个性化行动指南（约3000字）。</div>';
             html += '<button class="btn" id="unlockBtn">9.9元 · 解锁完整报告 →</button>';
-            html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">微信支付后发送邮件，24小时内发送</p>';
+            html += '<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:12px;">微信支付后发送邮件，24小时内发送完整版</p>';
             html += '</div>';
         } else {
             html += '<div class="card highlight-card" style="background:rgba(76,175,80,0.05);">';
-            html += '<div class="card-title" style="color:#4caf50;">📬 获取完整逐题解读</div>';
-            html += '<div class="card-text">你已经完成了付费，但由于系统限制，完整的 <b>' + (isPartner ? '40' : '22') + '道逐题详细分析</b> 会通过邮件发送给你。<br><br>';
+            html += '<div class="card-title" style="color:#4caf50;">📬 获取完整逐题解读（Word版）</div>';
+            html += '<div class="card-text">你已经完成了付费，完整的 <b>22道逐题详细分析</b> 会通过邮件发送给你。<br><br>';
             html += '<b>请发送邮件到：wotule_nilongme@163.com</b><br>';
             html += '邮件标题：【已付费+' + code + '】<br>';
             html += '邮件内容：你的微信昵称 + 报告编号 ' + code + '<br><br>';
             html += '我会在<b>24小时内</b>将完整版（Word/PDF）发送给你。<br><br>';
-            html += '再次感谢你的支持！你的每一次付费，都是这个“关系实验室”能继续做下去的动力。❤️</div>';
-            html += '</div>';
+            html += '你的每一次付费，都是这个“关系实验室”能继续做下去的动力。谢谢你愿意为你们的连接花这笔钱。❤️';
+            html += '</div></div>';
         }
         
         // 免责声明
@@ -263,7 +169,33 @@
         
         document.getElementById('report').innerHTML = html;
         
-        // 绑定解锁按钮（仅未付费时需要）
+        // ========== 绑定复制按钮 ==========
+        var copyBtn = document.getElementById('copyCodeBtn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(code);
+                alert('✅ 报告编号已复制：' + code + '\n\n可以分享给伴侣或朋友查看。');
+            });
+        }
+        
+        // ========== 绑定逐题解读跳转按钮 ==========
+        var gotoBtn = document.getElementById('gotoViewReportBtn');
+        if (gotoBtn) {
+            gotoBtn.onclick = function() {
+                var inputCode = document.getElementById('inputReportCode').value.trim().toUpperCase();
+                if (!inputCode) {
+                    alert('请输入报告编号');
+                    return;
+                }
+                var url = 'view-report.html?code=' + inputCode;
+                if (isPaid) {
+                    url += '&unlock=paid';
+                }
+                window.location.href = url;
+            };
+        }
+        
+        // 绑定付费按钮
         if (!isPaid) {
             var unlockBtn = document.getElementById('unlockBtn');
             if (unlockBtn) {
@@ -275,7 +207,7 @@
     })
     .catch(function(err) {
         console.error(err);
-        document.getElementById('report').innerHTML = '<h1>⚠️ 加载失败</h1><p>请检查网络后重试。<br><br>或发邮件到 <b>wotule_nilongme@163.com</b><br>提供你的报告编号 <b>' + code + '</b>，我会手动发送给你。</p>';
+        document.getElementById('report').innerHTML = '<h1>⚠️ 加载失败</h1><p>请检查网络后重试。<br><br>或发邮件到 <b>wotule_nilongme@163.com</b><br>提供你的报告编号 <b>' + (code || '') + '</b>，我会手动发送给你。</p>';
     });
 })();
 </script>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逐题解读 · 爱的接收模式</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin:0; padding:20px; background:linear-gradient(135deg,#1a0a28 0%,#2a1a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
+        .container { max-width:700px; margin:0 auto; }
+        .card { background:rgba(255,255,255,0.05); border-radius:20px; padding:24px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); }
+        .card-title { font-size:20px; font-weight:700; margin-bottom:16px; color:#e05a8a; }
+        .input-group { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+        .input-group input { flex:3; padding:14px 18px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-size:16px; outline:none; }
+        .input-group input::placeholder { color:rgba(255,255,255,0.4); }
+        .input-group button { flex:1; padding:14px 18px; border-radius:12px; border:none; background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; font-size:16px; font-weight:600; cursor:pointer; }
+        .tag { display:inline-block; background:linear-gradient(135deg,#e05a8a,#c04a6a); padding:6px 20px; border-radius:100px; font-size:14px; font-weight:600; margin-bottom:8px; }
+        .question-block { margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+        .question-text { font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.5; color:#fff; }
+        .answer-badge { display:inline-block; background:rgba(224,90,138,0.2); border-radius:20px; padding:4px 14px; font-size:13px; margin-bottom:12px; }
+        .insight { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.8); background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; margin-top:8px; }
+        .btn-unlock { background:rgba(255,255,255,0.1); border:1px solid rgba(224,90,138,0.5); color:#e05a8a; padding:12px; border-radius:12px; cursor:pointer; text-align:center; margin-top:20px; font-weight:600; }
+        .btn-unlock:hover { background:rgba(224,90,138,0.15); }
+        .loading { text-align:center; padding:60px 0; color:rgba(255,255,255,0.6); }
+        .error { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:12px; padding:16px; text-align:center; }
+        .preview-note { background:rgba(224,90,138,0.15); border-radius:12px; padding:12px; text-align:center; font-size:13px; margin-top:16px; }
+        .copy-btn { background:rgba(224,90,138,0.2); border:1px solid #e05a8a; border-radius:20px; padding:6px 14px; font-size:13px; color:#e05a8a; cursor:pointer; transition:0.2s; }
+        .copy-btn:hover { background:rgba(224,90,138,0.4); }
+        .flex-between { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:8px;">🌸</div>
+        <h1 style="margin:0 0 8px 0;">逐题深度解读 · 爱的接收模式</h1>
+        <p style="color:rgba(255,255,255,0.6); margin-bottom:24px;">输入你的报告编号，查看每道题的个性化分析</p>
+        
+        <div class="input-group">
+            <input type="text" id="reportCode" placeholder="例如: PRT-XXXX" value="PRT-RSPL">
+            <button id="searchBtn">🔍 查询报告</button>
+        </div>
+    </div>
+
+    <div id="resultArea"></div>
+</div>
+
+<script>
+// 女生版题目库（与 questions-partner.js 保持一致）
+const PARTNER_QUESTIONS = [
+    { id: 1, text: "我们之间突然安静下来，我第一反应是：是不是我又做错什么了。", dimension: 1 },
+    { id: 2, text: "我能感觉到，他有时候不说话，是在心里组织语言，不是在对我冷暴力。", dimension: 1 },
+    { id: 3, text: "他沉默超过十分钟，我心里就会冒出一个声音催我去问问他到底怎么了。", dimension: 1 },
+    { id: 4, text: "他跟兄弟在一起有说有笑，一回到我身边话就少了，这让我心里有点发酸。", dimension: 1 },
+    { id: 5, text: "事后冷静下来想想，我经常把他的沉默想得太严重了，他可能真的只是累了。", dimension: 1 },
+    { id: 6, text: "小时候家里有人生气就不说话，那种安静让我到现在都有点紧张。", dimension: 1 },
+    { id: 7, text: "他一沉默，我就会想到之前那些还没解开的疙瘩，觉得他是不是还在为那些事不高兴。", dimension: 1 },
+    { id: 8, text: "他说'没什么'的时候，我下意识觉得他其实有事，只是不愿意跟我讲。", dimension: 1 },
+    { id: 9, text: "我能分辨出他那种'在想事情'的安静，和那种'在回避'的安静，周围空气的味道都不一样。", dimension: 1 },
+    { id: 10, text: "他超过半小时没回我消息，我会反复点开手机，脑子里忍不住编出各种剧情。", dimension: 1 },
+    { id: 11, text: "我嘴上说'没事'，其实心里悄悄希望他能听出来我有事。", dimension: 2 },
+    { id: 12, text: "当我直接把需求说清楚，他其实是很愿意去做的。", dimension: 2 },
+    { id: 13, text: "我需要他做什么时，会跟他讲得很具体：什么时间、在哪儿、需要他干嘛。", dimension: 2 },
+    { id: 14, text: "我有时候会把好几件不舒服的事攒在心里，最后挑一件最安全的讲出来。", dimension: 2 },
+    { id: 15, text: "我觉得如果他真的在乎我，有些事不用我开口他也应该能注意到。", dimension: 2 },
+    { id: 16, text: "身体不舒服或者心情很差的时候，反而更开不了口说'我需要你帮我'。", dimension: 2 },
+    { id: 17, text: "吵起来的时候，我会忍不住说'你从来不……''你总是……'这种话。", dimension: 2 },
+    { id: 18, text: "在外面跟朋友同事我能说会道，但回到家对着他，有些话反而堵在嗓子眼。", dimension: 2 },
+    { id: 19, text: "我经常在心里把要说的话排练好几遍，真见了他又咽回去了。", dimension: 2 },
+    { id: 20, text: "当我开始为一件事发牢骚，其实真正想说的是另一件更重的事，只是还没准备好开口。", dimension: 2 },
+    { id: 21, text: "他下班回来顺手给我带一杯爱喝的，比一句'我爱你'更让我觉得被惦记。", dimension: 3 },
+    { id: 22, text: "我需要他认认真真听我说话，而不是一边刷手机一边嗯嗯地敷衍。", dimension: 3 },
+    { id: 23, text: "他能记住我不经意说过的小事，这让我觉得自己在他心里有个特别的位置。", dimension: 3 },
+    { id: 24, text: "他踏踏实实为家挣钱，嘴上不说甜话，我也能感觉到了他的在乎。", dimension: 3 },
+    { id: 25, text: "我需要他偶尔什么都不为，就安安静静抱我一会儿。", dimension: 3 },
+    { id: 26, text: "我情绪崩了的时候，他不用帮我解决什么，在旁边安静陪着就好。", dimension: 3 },
+    { id: 27, text: "两个人能坐下来好好聊一次天，对我来说是关系里很重要的事。", dimension: 3 },
+    { id: 28, text: "他主动去洗碗拖地的时候，我觉得他在用他的方式说爱我。", dimension: 3 },
+    { id: 29, text: "我希望他能偶尔给我写几句话，哪怕就贴在冰箱上。", dimension: 3 },
+    { id: 30, text: "想一想小时候，爱在你家里是怎么被表达的？——那种方式，现在你还期待吗？", dimension: 3 },
+    { id: 31, text: "吵完架我通常会先哭一场，哭完会想去找他，或者等他来找我。", dimension: 4 },
+    { id: 32, text: "他说翻篇就翻篇了，但我心里那口气还没顺过来。", dimension: 4 },
+    { id: 33, text: "我能感觉到，他有时候也想和好，只是拉不下脸先开口。", dimension: 4 },
+    { id: 34, text: "吵完架我一个人躺着，脑子里会把当时说的话重放好几遍，越想越难受。", dimension: 4 },
+    { id: 35, text: "只要能说开，吵一架其实没什么，总比两个人都憋着装没事好。", dimension: 4 },
+    { id: 36, text: "和好之后，我需要他做点什么让我确定我们真的好了，比如拉一下我的手，或者带我出去吃顿好的。", dimension: 4 },
+    { id: 37, text: "我有时候故意不先开口，就想看看他会不会主动来找我。", dimension: 4 },
+    { id: 38, text: "吵完架我会把整个过程都跟闺蜜讲一遍，讲完心里能松快一大截。", dimension: 4 },
+    { id: 39, text: "最受不了的是，刚吵完架他转身就能呼呼大睡，留我一个人瞪着天花板。", dimension: 4 },
+    { id: 40, text: "上次闹别扭，最后是谁先破的冰？——这种事在我们之间发生的次数，记不清了。", dimension: 4 }
+];
+
+// 根据分数生成解读（女生版）
+function getInsight(score, dimension, text) {
+    if (score >= 4) {
+        if (dimension === 1) return "🔴 你选择了「非常符合」或「符合」。这说明你很容易把他的沉默解读为针对自己的信号，这可能让你在关系中常常感到不安。下一次他安静时，试着先对自己说：“这不一定是我的问题，他可能只是累了。”";
+        if (dimension === 2) return "🔴 你选择了「非常符合」或「符合」。这说明你的需求表达常常是“加密”的，你嘴上说没事，心里希望他能自己发现。但他的解码器可能真的收不到这个信号。下次试着把“没事”换成“我有点不开心，等我一下好吗？”";
+        if (dimension === 3) return "🔴 你选择了「非常符合」或「符合」。这说明你对爱的感知方式比较固定，只有特定形式的爱你才能收到。可以试着写下来你最喜欢被爱的方式，然后告诉他，这不是在教他，是在帮他更好地爱你。";
+        if (dimension === 4) return "🔴 你选择了「非常符合」或「符合」。这说明你在冲突后需要完整的仪式才能感到安全。下次可以直接告诉他：“我需要一个明确的信号知道我们和好了，比如你牵一下我的手。”";
+        return "🔴 你选择了较高的分数，这说明这个描述对你来说比较符合。可以留意一下这个模式，它是你可以开始调整的地方。";
+    } else if (score <= 2) {
+        if (dimension === 1) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你不太会把他的沉默当成压力，能够给他留出空间。这份松弛感正是很多女生羡慕的能力。";
+        if (dimension === 2) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你能比较直接地表达自己的需求，这种清晰度能极大降低沟通成本，是你在关系中的核心优势。";
+        if (dimension === 3) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你的爱意接收器很灵活，能从多种行为中解读出爱。这份能力让你在关系中更容易感到满足。";
+        if (dimension === 4) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你在冲突后恢复得比较快，有自己独立的修复方式，这是很宝贵的能力。";
+        return "🟢 你选择了较低的分数，这说明这个描述对你来说不太符合，你已经在这方面做得不错了。";
+    } else {
+        if (dimension === 1) return "🟡 你选择了中间分数。这说明你有时能分辨沉默的类型，有时会多想。这是大多数人的状态，你可以通过给自己10分钟的缓冲来减少焦虑。";
+        if (dimension === 2) return "🟡 你选择了中间分数。这说明你多数时候能说清需求，但压力下还是会绕弯子。你可以从小事开始练习直接表达。";
+        if (dimension === 3) return "🟡 你选择了中间分数。这说明你能从多种方式感知爱，但有自己的偏好。你可以和他一起做“爱的语言”小练习。";
+        if (dimension === 4) return "🟡 你选择了中间分数。这说明你能接受不同的修复节奏，但有时会等得太久。可以和他约定一个和好的小仪式。";
+        return "🟡 你选择了中间分数。这说明这个描述对你来说部分符合，部分不符合。你可以根据自己的感受，决定是否需要调整。";
+    }
+}
+
+const SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+
+let currentData = null;
+let isUnlocked = false;
+
+async function fetchReport(code) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/answers?code=eq.${encodeURIComponent(code)}`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    const data = await response.json();
+    if (!data || data.length === 0) return null;
+    return data[0];
+}
+
+function renderQuestions(answers, maxShow = null) {
+    const total = PARTNER_QUESTIONS.length;
+    const showCount = maxShow ? Math.min(maxShow, total) : total;
+    let html = '';
+    for (let i = 0; i < showCount; i++) {
+        const q = PARTNER_QUESTIONS[i];
+        const answer = answers[i] || 3;
+        const insight = getInsight(answer, q.dimension, q.text);
+        html += `
+            <div class="question-block">
+                <div class="question-text">${q.id}. ${q.text}</div>
+                <div class="answer-badge">你的答案：${answer} / 5（${answer === 1 ? '完全不符合' : answer === 2 ? '不太符合' : answer === 3 ? '中等' : answer === 4 ? '比较符合' : '完全符合'}）</div>
+                <div class="insight">${insight}</div>
+            </div>
+        `;
+    }
+    return html;
+}
+
+document.getElementById('searchBtn').addEventListener('click', async () => {
+    const code = document.getElementById('reportCode').value.trim().toUpperCase();
+    if (!code) {
+        document.getElementById('resultArea').innerHTML = '<div class="card error">请输入报告编号</div>';
+        return;
+    }
+    
+    document.getElementById('resultArea').innerHTML = '<div class="card loading">⏳ 正在查询报告...</div>';
+    
+    const data = await fetchReport(code);
+    if (!data) {
+        document.getElementById('resultArea').innerHTML = '<div class="card error">❌ 未找到报告，请检查编号是否正确</div>';
+        return;
+    }
+    
+    currentData = data;
+    const answers = data.answers_json || [];
+    const personality = data.personality || '探索者';
+    
+    let html = `
+        <div class="card">
+            <div class="tag" style="margin-bottom:8px;">${personality}</div>
+            <div class="flex-between">
+                <div style="font-size:22px; font-weight:700;">📖 逐题深度解读 · 爱的接收模式</div>
+                <button class="copy-btn" id="copyCodeBtn">📋 复制编号 ${code}</button>
+            </div>
+            <div style="color:rgba(255,255,255,0.5); margin:8px 0 16px;">编号：${code}</div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">沉默解读 ${data.dim1}/50</span>
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">需求表达 ${data.dim2}/50</span>
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">爱意感知 ${data.dim3}/50</span>
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">冲突修复 ${data.dim4}/50</span>
+            </div>
+    `;
+    
+    // 检查是否是付费解锁
+    const urlParams = new URLSearchParams(window.location.search);
+    const paid = urlParams.get('unlock') === 'paid' || isUnlocked;
+    
+    if (paid) {
+        html += renderQuestions(answers, null);
+        html += `<div style="margin-top:20px; padding:16px; background:rgba(76,175,80,0.1); border-radius:16px; text-align:center;">
+            ✅ 感谢支持！你已经解锁全部40道题的深度解读。
+        </div>`;
+    } else {
+        // 只显示前3题作为预览
+        html += renderQuestions(answers, 3);
+        html += `
+            <div class="preview-note">
+                🔒 以上是前3题预览。完整版包含<b>全部40道题的逐题分析</b> + 专属行动指南。
+            </div>
+            <div class="btn-unlock" id="unlockBtn">
+                🔓 输入解锁码，查看完整逐题解读
+            </div>
+        `;
+    }
+    
+    html += `</div>`;
+    document.getElementById('resultArea').innerHTML = html;
+    
+    // 绑定复制按钮
+    const copyBtn = document.getElementById('copyCodeBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(code);
+            alert('✅ 报告编号已复制：' + code + '\n\n可以分享给伴侣或朋友查看。');
+        });
+    }
+    
+    if (!paid && document.getElementById('unlockBtn')) {
+        document.getElementById('unlockBtn').addEventListener('click', () => {
+            const codeInput = prompt('请输入解锁码（付费后获得）\n\n解锁码获取方式：微信支付9.9元后，联系 wotule_nilongme@163.com 获取');
+            if (codeInput === '2025') {
+                isUnlocked = true;
+                document.getElementById('searchBtn').click();
+            } else if (codeInput !== null) {
+                alert('解锁码错误，请确认后重新输入');
+            }
+        });
+    }
+});
+
+// 自动加载默认编号（如果URL中有code参数）
+const urlCode = new URLSearchParams(window.location.search).get('code');
+if (urlCode) {
+    document.getElementById('reportCode').value = urlCode;
+}
+document.getElementById('searchBtn').click();
+</script>
+</body>
+</html>

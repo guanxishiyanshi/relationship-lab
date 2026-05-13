@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逐题解读 · 情感出厂设置</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin:0; padding:20px; background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
+        .container { max-width:700px; margin:0 auto; }
+        .card { background:rgba(255,255,255,0.05); border-radius:20px; padding:24px; margin-bottom:20px; border:1px solid rgba(255,255,255,0.1); }
+        .card-title { font-size:20px; font-weight:700; margin-bottom:16px; color:#f0974a; }
+        .input-group { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+        .input-group input { flex:3; padding:14px 18px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-size:16px; outline:none; }
+        .input-group input::placeholder { color:rgba(255,255,255,0.4); }
+        .input-group button { flex:1; padding:14px 18px; border-radius:12px; border:none; background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; font-size:16px; font-weight:600; cursor:pointer; }
+        .tag { display:inline-block; background:linear-gradient(135deg,#f0974a,#e05a2a); padding:6px 20px; border-radius:100px; font-size:14px; font-weight:600; margin-bottom:8px; }
+        .question-block { margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+        .question-text { font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.5; color:#fff; }
+        .answer-badge { display:inline-block; background:rgba(240,151,74,0.2); border-radius:20px; padding:4px 14px; font-size:13px; margin-bottom:12px; }
+        .insight { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.8); background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; margin-top:8px; }
+        .btn-unlock { background:rgba(255,255,255,0.1); border:1px solid rgba(240,151,74,0.5); color:#f0974a; padding:12px; border-radius:12px; cursor:pointer; text-align:center; margin-top:20px; font-weight:600; }
+        .btn-unlock:hover { background:rgba(240,151,74,0.15); }
+        .loading { text-align:center; padding:60px 0; color:rgba(255,255,255,0.6); }
+        .error { background:rgba(224,90,42,0.2); border:1px solid #e05a2a; border-radius:12px; padding:16px; text-align:center; }
+        .preview-note { background:rgba(240,151,74,0.15); border-radius:12px; padding:12px; text-align:center; font-size:13px; margin-top:16px; }
+        .copy-btn { background:rgba(240,151,74,0.2); border:1px solid #f0974a; border-radius:20px; padding:6px 14px; font-size:13px; color:#f0974a; cursor:pointer; transition:0.2s; }
+        .copy-btn:hover { background:rgba(240,151,74,0.4); }
+        .flex-between { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:8px;">📖</div>
+        <h1 style="margin:0 0 8px 0;">逐题深度解读</h1>
+        <p style="color:rgba(255,255,255,0.6); margin-bottom:24px;">输入你的报告编号，查看每道题的个性化分析</p>
+        
+        <div class="input-group">
+            <input type="text" id="reportCode" placeholder="例如: REL-RSPL" value="REL-RSPL">
+            <button id="searchBtn">🔍 查询报告</button>
+        </div>
+    </div>
+
+    <div id="resultArea"></div>
+</div>
+
+<script>
+// 题目库（与 questions.js 保持一致）
+const QUESTIONS = [
+    { id: 1, text: "感到烦躁或低落的时候，我第一反应是给自己找点事做，比如工作、打游戏、刷视频，让自己忙起来不去想它。", dimension: 1 },
+    { id: 2, text: "情绪上来的那个当下，我通常只觉得心里乱糟糟的，说不清楚自己到底是生气、委屈还是失望。", dimension: 1 },
+    { id: 3, text: "别人问我“你怎么了”，我的第一反应是回一句“没什么”，其实心里是有事的。", dimension: 1 },
+    { id: 4, text: "一天过得不咸不淡，什么大事都没发生，心里却有种说不清的空落落。这种感觉我通常不会细想，告诉自己早点睡，明天就好了。", dimension: 1 },
+    { id: 5, text: "和伴侣吵完架的当下，我说不清自己到底怎么了。总要过好几个小时，甚至好几天，才慢慢回过味来，原来自己当时是觉得受伤了，或者被忽视了。", dimension: 1 },
+    { id: 6, text: "我打心底里觉得，一个大男人老琢磨自己开不开心，挺没出息的。", dimension: 1 },
+    { id: 7, text: "我能察觉到，我对自己说话的方式，往往比对别人说话要刻薄得多。", dimension: 1 },
+    { id: 8, text: "伴侣情绪一上来，冲我问“你心里到底在想什么”，我脑子常常一下子就空了。不是不想说，是真不知道该从哪儿说起。", dimension: 1 },
+    { id: 9, text: "伴侣心情不好的时候，我经常摸不准她到底是想让我帮忙出主意，还是就想让我安安静静听她说完。", dimension: 2 },
+    { id: 10, text: "伴侣在我面前哭或者发脾气，我第一反应不是心疼，而是心里很烦躁，压力很大，只想赶紧让这个场面结束。", dimension: 2 },
+    { id: 11, text: "伴侣跟我倒完苦水，我通常会帮她分析分析，给几条建议，然后就觉得这件事算处理完了。", dimension: 2 },
+    { id: 12, text: "我很难单从伴侣说话的语气、脸上的表情或者她的沉默里，判断出她是生气了、难过了，还是单纯累了。", dimension: 2 },
+    { id: 13, text: "伴侣情绪崩溃的时候，除了在旁边默默陪着，我完全不知道还能怎么安慰她，常常觉得很无力，手都不知道往哪儿放。", dimension: 2 },
+    { id: 14, text: "伴侣跟我聊她的心事，我会不自觉地说起自己类似的经历，聊着聊着，话题就慢慢变成了我在说。", dimension: 2 },
+    { id: 15, text: "一次不愉快的谈话结束以后，我不会再主动把这件事翻出来聊，觉得过去了就翻篇了，再提对谁都不好。", dimension: 2 },
+    { id: 16, text: "一想到婚姻，我脑子里最先蹦出来的词是责任、养家、别让父母操心、把这个人生阶段的任务完成好。", dimension: 3 },
+    { id: 17, text: "在一段长久的关系里，除了把经济基础打好、不做出格的事，我不太说得出来自己还能提供什么别的价值。", dimension: 3 },
+    { id: 18, text: "我追求或者维持一段关系，更多是因为年纪到了、身边人都结了、家里也该有个交代了，而不是自己心里真的有多渴望。", dimension: 3 },
+    { id: 19, text: "对我来说，被一个人需要的感觉很踏实，比我主动想和她在一起的那种感觉，更让我确定、更有安全感。", dimension: 3 },
+    { id: 20, text: "我心里隐隐觉得，爱情这东西不太实在。它总得有点实际用处——比如一起养家、生孩子、照顾老人——才值得花时间花精力去经营。", dimension: 3 },
+    { id: 21, text: "与其说我有多渴望一段感情，不如说我更害怕老了还是一个人，那种孤独和难堪想起来就发慌。", dimension: 3 },
+    { id: 22, text: "我能想象婚后日子会慢慢变淡，甚至彼此都有点倦了，但我对自己能不能经营好它、让这个家一直有点温度，心里是没底的。", dimension: 3 }
+];
+
+// 根据分数生成解读
+function getInsight(score, dimension, text) {
+    if (score >= 4) {
+        if (dimension === 1) return "🔴 你选择了「非常符合」或「符合」。这说明你习惯用逃避来应对情绪，长期下来可能会让你离自己的感受越来越远。试着在下一次情绪上来时，先停下来问自己一句：“我现在是什么感觉？”——不解决问题，只是看见它。";
+        if (dimension === 2) return "🔴 你选择了「非常符合」或「符合」。这说明你在共情回应上常常感到困惑或压力。下次她情绪不好时，试着先问一句：“你想让我听，还是想一起想办法？”这一句话可以避免80%的无效安慰。";
+        if (dimension === 3) return "🔴 你选择了「非常符合」或「符合」。这说明你的爱的驱动力更多来自责任或恐惧，而不是内心真实的渴望。找一个安静的时刻，问自己：“如果不考虑任何人的期待，我想和她一起做什么？”——哪怕很小的事，把它做一次。";
+        return "🔴 你选择了较高的分数，这说明这个描述对你来说比较符合。可以留意一下这个模式，它是你可以开始调整的地方。";
+    } else if (score <= 2) {
+        if (dimension === 1) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你对自己情绪的觉察和接纳已经有一定的能力，这是很多男性缺失的宝贵能力。继续保持，也可以尝试偶尔把这种觉察分享给她。";
+        if (dimension === 2) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你在共情回应上已经比较自然，能够分辨她什么时候需要倾听、什么时候需要建议。这是你在关系中的核心优势。";
+        if (dimension === 3) return "🟢 你选择了「不太符合」或「完全不符合」。这说明你的爱的驱动力更多来自内心的渴望而非外部压力。这份主动和真诚是你们关系中最温暖的燃料。";
+        return "🟢 你选择了较低的分数，这说明这个描述对你来说不太符合，你已经在这方面做得不错了。";
+    } else {
+        if (dimension === 1) return "🟡 你选择了中间分数。这说明你有时能觉察情绪，有时还是会选择逃避。这是大多数人的状态，你可以通过每天2分钟的“自我扫描”练习，慢慢提升觉察能力。";
+        if (dimension === 2) return "🟡 你选择了中间分数。这说明你在共情上有时能接住，有时会卡住。你正在新旧模式之间切换，已经比很多人走得远了。";
+        if (dimension === 3) return "🟡 你选择了中间分数。这说明你内心既有渴望也有犹豫，既有责任也有疑问。你已经意识到了这一点，这是改变的第一步。";
+        return "🟡 你选择了中间分数。这说明这个描述对你来说部分符合，部分不符合。你可以根据自己的感受，决定是否需要调整。";
+    }
+}
+
+const SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+
+let currentData = null;
+let isUnlocked = false;
+
+async function fetchReport(code) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/answers?code=eq.${encodeURIComponent(code)}`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    const data = await response.json();
+    if (!data || data.length === 0) return null;
+    return data[0];
+}
+
+function renderQuestions(answers, maxShow = null) {
+    const total = QUESTIONS.length;
+    const showCount = maxShow ? Math.min(maxShow, total) : total;
+    let html = '';
+    for (let i = 0; i < showCount; i++) {
+        const q = QUESTIONS[i];
+        const answer = answers[i] || 3;
+        const insight = getInsight(answer, q.dimension, q.text);
+        html += `
+            <div class="question-block">
+                <div class="question-text">${q.id}. ${q.text}</div>
+                <div class="answer-badge">你的答案：${answer} / 5（${answer === 1 ? '完全不符合' : answer === 2 ? '不太符合' : answer === 3 ? '中等' : answer === 4 ? '比较符合' : '完全符合'}）</div>
+                <div class="insight">${insight}</div>
+            </div>
+        `;
+    }
+    return html;
+}
+
+document.getElementById('searchBtn').addEventListener('click', async () => {
+    const code = document.getElementById('reportCode').value.trim().toUpperCase();
+    if (!code) {
+        document.getElementById('resultArea').innerHTML = '<div class="card error">请输入报告编号</div>';
+        return;
+    }
+    
+    document.getElementById('resultArea').innerHTML = '<div class="card loading">⏳ 正在查询报告...</div>';
+    
+    const data = await fetchReport(code);
+    if (!data) {
+        document.getElementById('resultArea').innerHTML = '<div class="card error">❌ 未找到报告，请检查编号是否正确</div>';
+        return;
+    }
+    
+    currentData = data;
+    const answers = data.answers_json || [];
+    const personality = data.personality || '探索者';
+    
+    let html = `
+        <div class="card">
+            <div class="tag" style="margin-bottom:8px;">${personality}</div>
+            <div class="flex-between">
+                <div style="font-size:22px; font-weight:700;">📖 逐题深度解读</div>
+                <button class="copy-btn" id="copyCodeBtn">📋 复制编号 ${code}</button>
+            </div>
+            <div style="color:rgba(255,255,255,0.5); margin:8px 0 16px;">编号：${code}</div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">自我情绪 ${data.dim1}/40</span>
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">共情回应 ${data.dim2}/35</span>
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:20px;">爱的动力 ${data.dim3}/35</span>
+            </div>
+    `;
+    
+    // 检查是否是付费解锁
+    const urlParams = new URLSearchParams(window.location.search);
+    const paid = urlParams.get('unlock') === 'paid' || isUnlocked;
+    
+    if (paid) {
+        html += renderQuestions(answers, null);
+        html += `<div style="margin-top:20px; padding:16px; background:rgba(76,175,80,0.1); border-radius:16px; text-align:center;">
+            ✅ 感谢支持！你已经解锁全部22道题的深度解读。
+        </div>`;
+    } else {
+        // 只显示前3题作为预览
+        html += renderQuestions(answers, 3);
+        html += `
+            <div class="preview-note">
+                🔒 以上是前3题预览。完整版包含<b>全部22道题的逐题分析</b> + 专属行动指南。
+            </div>
+            <div class="btn-unlock" id="unlockBtn">
+                🔓 输入解锁码，查看完整逐题解读
+            </div>
+        `;
+    }
+    
+    html += `</div>`;
+    document.getElementById('resultArea').innerHTML = html;
+    
+    // 绑定复制按钮
+    const copyBtn = document.getElementById('copyCodeBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(code);
+            alert('✅ 报告编号已复制：' + code + '\n\n可以分享给伴侣或朋友查看。');
+        });
+    }
+    
+    if (!paid && document.getElementById('unlockBtn')) {
+        document.getElementById('unlockBtn').addEventListener('click', () => {
+            const codeInput = prompt('请输入解锁码（付费后获得）\n\n解锁码获取方式：微信支付9.9元后，联系 wotule_nilongme@163.com 获取');
+            if (codeInput === '2025') {
+                isUnlocked = true;
+                document.getElementById('searchBtn').click();
+            } else if (codeInput !== null) {
+                alert('解锁码错误，请确认后重新输入');
+            }
+        });
+    }
+});
+
+// 自动加载默认编号
+document.getElementById('searchBtn').click();
+</script>
+</body>
+</html>
