@@ -59,10 +59,10 @@
     <div class="card" style="text-align:center; border:2px solid rgba(224,90,138,0.6); background:rgba(224,90,138,0.08);">
         <div class="card-title" style="color:#e05a8a; font-size:18px;">🔓 为什么会这样？怎么改变？</div>
         <div class="card-text" style="margin-bottom:12px;">解锁 <b>2500字完整深度报告</b>，看清你的爱的接收模式。</div>
-        <button class="btn-pay" onclick="window.open('https://你的问卷星链接','_blank')">9.9元 · 解锁完整报告 →</button>
-        <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">微信支付，自动生成</p>
+        <button class="btn-pay" id="payBtn">9.9元 · 解锁完整报告 →</button>
+        <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">微信扫码支付，24小时内发送报告</p>
     </div>
-    
+
     <!-- 创作者故事入口 -->
     <div class="card" style="text-align:center; cursor:pointer;" id="aboutCard">
         <div style="font-size:32px; margin-bottom:8px;">🐰🐲</div>
@@ -94,7 +94,7 @@
 <!-- 右上角二维码 -->
 <div style="position:fixed; top:80px; right:16px; z-index:999; background:#fff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
     <div id="qrcode" style="display:inline-block; width:80px; height:80px;"></div>
-    <p style="font-size:10px; color:#666; margin:4px 0 0;">扫码看结果</p>
+    <p style="font-size:10px; color:#666; margin:4px 0 0;">扫码看深度报告</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
@@ -159,15 +159,14 @@ chart.setOption({
 });
 window.addEventListener('resize',function(){chart.resize();});
 
-// 直击内心的一道题
 (function(){
     try{
         var ua=JSON.parse(localStorage.getItem('partner-lab-progress')).answers;
         var qs=[
-            {idx:0,t:'🤐 他沉默时，你第一反应是什么',h:'两个人突然安静下来，你脑子里第一个念头是：是不是我又做错什么了。你已经习惯替他的沉默买单——把安静翻译成自己的错。那口锅不是你的。',m:'你有时会把他的沉默当敌意，有时能冷静。你能反思，但反思总在事后。试着提前一点。',l:'你不会立刻怪自己。你能把沉默当作沉默，不是信号。这份冷静很珍贵。'},
-            {idx:10,t:'📝 你嘴上说没事，心里在等什么',h:'你说"没事"的时候，心里在喊"我有事"。你希望他读懂你。但他的接收器解不开加密信号。你发的是密电，他收到的是乱码。',m:'你有时等他自己发现，有时直接说。你正在从加密切换到明码，需要一点信任。',l:'你习惯直接说"我需要什么"。这份清晰让你更少被误解。'},
+            {idx:0,t:'🤐 他沉默时，你第一反应是什么',h:'两个人突然安静下来，你脑子里第一个念头是：是不是我又做错什么了。你已经习惯替他的沉默买单。那口锅不是你的。',m:'你有时会把他的沉默当敌意，有时能冷静。你在练习提前反思的时间点。',l:'你不会立刻怪自己。你能把沉默当作沉默，不是信号。这份冷静很珍贵。'},
+            {idx:10,t:'📝 你嘴上说没事，心里在等什么',h:'你说"没事"的时候，心里在喊"我有事"。但我们已经知道了——他的接收器解不开加密信号。你发的是密电，他收到的是乱码。',m:'你有时等他自己发现，有时直接说。你正在从加密切换到明码。',l:'你习惯直接说"我需要什么"。这份清晰让你更少被误解。'},
             {idx:19,t:'🗣️ 你发牢骚的背后，藏着哪句话',h:'你为一件事不开心，其实是另一件更重的事压着。那件重事你还没准备好说，先拿小事探路。下次在牢骚后面加一句："其实我在意的是……"',m:'你偶尔绕弯，但多数时候能说清。你正在从试探走向直接。',l:'你不太用试探来传达需求。你知道自己在意什么，也敢说出来。'},
-            {idx:29,t:'🏠 你小时候，爱是怎么被表达的',h:'小时候在你家，爱可能是一顿饭、一次沉默的肯定。那些表达方式和你现在期待的不一样。你们是在不同频道上长大的两个人，用不同的方言说爱。',m:'你能看到童年的影子，也在尝试建立新频道。',l:'你的过去和现在之间没有断层。你已经处理好了童年的影响。'},
+            {idx:29,t:'🏠 你小时候，爱是怎么被表达的',h:'小时候在你家，爱可能是一顿饭、一次沉默的肯定。那些表达方式和你现在期待的不一样。你们是在不同频道上长大的两个人。',m:'你能看到童年的影子，也在尝试建立新频道。',l:'你的过去和现在之间没有断层。你已经处理好了童年的影响。'},
             {idx:38,t:'😤 吵完架他秒睡，你在想什么',h:'他秒睡的时候，你一个人在黑暗里重放刚才的话。他的修复是关机，你的修复是对话。下次告诉他：你可以先睡，但在我睡着前，我需要知道你在乎我。',m:'他秒睡的时候你有时难受，有时能消化。你在找平衡。',l:'他秒睡不会让你焦虑。你有自己的恢复方式。'}
         ];
         qs.sort(function(a,b){return ua[b.idx]-ua[a.idx];});
@@ -180,10 +179,38 @@ window.addEventListener('resize',function(){chart.resize();});
     }catch(e){document.getElementById('deepCard').innerHTML='';}
 })();
 
+// ========== 保存答案到 Supabase ==========
+var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+var reportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+(function saveToSupabase(){
+    var savedProgress = JSON.parse(localStorage.getItem('partner-lab-progress'));
+    var answersArray = savedProgress ? savedProgress.answers : [];
+    fetch(SUPABASE_URL + '/rest/v1/answers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+            code: reportCode,
+            personality: personality,
+            dim1: scores.dim1,
+            dim2: scores.dim2,
+            dim3: scores.dim3,
+            dim4: scores.dim4,
+            answers_json: answersArray
+        })
+    });
+})();
+
 var shareData=encodeURIComponent(personality)+'|'+scores.dim1+'|'+scores.dim2+'|'+scores.dim3+'|'+scores.dim4;
 var shareEncoded=btoa(unescape(encodeURIComponent(shareData)));
 var shareUrl='https://guanxishiyanshi.github.io/relationship-lab/test.html?partner='+shareEncoded;
-var qrUrl='https://guanxishiyanshi.github.io/relationship-lab/partner-result.html?scores='+btoa(scores.dim1+','+scores.dim2+','+scores.dim3+','+scores.dim4)+'&mytype='+encodeURIComponent(personality);
+var qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-deep-report.html?code=' + reportCode;
 new QRCode(document.getElementById("qrcode"),{text:qrUrl,width:80,height:80,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});
 
 document.getElementById('saveBtn').onclick=function(){
@@ -230,6 +257,23 @@ if(partner){
     document.getElementById('closeCouple').onclick=function(){overlay.remove();document.getElementById('reopenCoupleBtn').style.display='block';};
     document.getElementById('reopenCoupleBtn').onclick=function(){showCouple();document.getElementById('coupleModule').scrollIntoView({behavior:'smooth'});};
 }
+// ========== 付费弹窗 ==========
+    document.getElementById('payBtn').onclick=function(){
+    var overlay=document.createElement('div');overlay.className='modal-overlay';
+    overlay.innerHTML='<div class="modal-box" style="text-align:center;">'+
+        '<div class="modal-title" style="font-size:18px;">📱 微信扫码支付 9.9元</div>'+
+        '<img src="pay-qrcode.png" style="width:200px; height:200px; margin:16px auto; display:block; border-radius:12px;">'+
+        '<div class="modal-desc" style="text-align:left; line-height:1.8; font-size:13px;">'+
+        '<p>支付完成后，请发邮件到：<br><b style="color:#e05a8a; font-size:15px;">wotule_nilongme@163.com</b></p>'+
+        '<p>邮件里告诉我：<br>① 你的画像标签<br>② 微信昵称（方便核对付款）</p>'+
+        '<p style="color:rgba(255,255,255,0.5);">我会在 <b style="color:#fff;">24小时内</b> 把完整深度报告发到你的邮箱。</p>'+
+        '</div>'+
+        '<div class="modal-btns" style="margin-top:12px;"><button class="modal-btn btn-ghost" id="closePay">关闭</button></div>'+
+        '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('closePay').onclick=function(){overlay.remove();};
+    overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+};
 
 // ========== 关于这份量表 ==========
 document.getElementById('aboutCard').onclick=function(){

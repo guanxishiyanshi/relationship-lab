@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完整深度报告</title>
+    <style>
+        body { margin:0; padding:16px; background:linear-gradient(135deg,#0a1628 0%,#1a2a4a 100%); min-height:100vh; font-family:"PingFang SC","Noto Sans SC","Helvetica Neue",sans-serif; color:#fff; }
+        .container { max-width:420px; margin:0 auto; padding-bottom:40px; }
+        .card { background:rgba(255,255,255,0.05); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
+        .card-title { font-size:16px; font-weight:600; margin-bottom:8px; color:#f0974a; }
+        .card-text { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.75); }
+        .highlight-card { border:2px solid rgba(240,151,74,0.5); background:rgba(240,151,74,0.08); }
+        .tag { display:inline-block; background:linear-gradient(135deg,#f0974a,#e05a2a); padding:8px 24px; border-radius:100px; font-size:14px; font-weight:600; margin-bottom:16px; }
+        h1 { font-size:28px; margin-bottom:8px; }
+        .subtitle { font-size:16px; color:rgba(255,255,255,0.6); margin-bottom:24px; }
+        .btn { display:block; width:100%; padding:16px; border-radius:12px; border:none; font-size:18px; font-weight:600; cursor:pointer; text-align:center; margin-top:24px; background:linear-gradient(135deg,#ff6b35,#f0974a); color:#fff; }
+        .loading { text-align:center; padding:60px 0; font-size:18px; color:rgba(255,255,255,0.6); }
+    </style>
+</head>
+<body>
+<div class="container" id="report">
+    <div class="loading">正在生成你的完整深度报告…</div>
+</div>
+
+<script>
+(function(){
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    if (!code) {
+        document.getElementById('report').innerHTML = '<h1>未找到报告编号</h1><p>请从测试结果页扫码进入。</p>';
+        return;
+    }
+
+    var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
+
+    fetch(SUPABASE_URL + '/rest/v1/answers?code=eq.' + encodeURIComponent(code), {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data || data.length === 0) {
+            document.getElementById('report').innerHTML = '<h1>未找到报告</h1><p>编号可能已过期，请重新测试。</p>';
+            return;
+        }
+        var d = data[0];
+        var answers = d.answers_json;
+        var personality = d.personality;
+
+        var maxScore = Math.max.apply(null, answers);
+        var minScore = Math.min.apply(null, answers);
+        var maxQuestions = [];
+        var minQuestions = [];
+        for (var i = 0; i < answers.length; i++) {
+            if (answers[i] === maxScore) maxQuestions.push(i + 1);
+            if (answers[i] === minScore) minQuestions.push(i + 1);
+        }
+
+        var html = '';
+        html += '<div class="tag">' + personality + '</div>';
+        html += '<h1>完整深度报告</h1>';
+        html += '<div class="subtitle">编号：' + code + '</div>';
+
+        html += '<div class="card"><div class="card-title">📊 你的三维度得分</div><div class="card-text">';
+        html += '自我情绪：<b>' + d.dim1 + '/40</b><br>';
+        html += '共情回应：<b>' + d.dim2 + '/35</b><br>';
+        html += '爱的动力：<b>' + d.dim3 + '/35</b>';
+        html += '</div></div>';
+
+        html += '<div class="card highlight-card"><div class="card-title">🔴 得分最高的题目（最需要关注）</div><div class="card-text">';
+        html += '第 ' + maxQuestions.join('、') + ' 题 · 得分 <b>' + maxScore + ' 分</b><br>';
+        html += '这些题目指向你最核心的困局。';
+        html += '</div></div>';
+
+        html += '<div class="card highlight-card"><div class="card-title">🟢 得分最低的题目（你的优势）</div><div class="card-text">';
+        html += '第 ' + minQuestions.join('、') + ' 题 · 得分 <b>' + minScore + ' 分</b><br>';
+        html += '这些是你已经做得不错的地方，继续保持。';
+        html += '</div></div>';
+
+        html += '<div class="card" style="text-align:center;">';
+        html += '<div class="card-title">🔓 想看每道题的详细深度解读？</div>';
+        html += '<div class="card-text" style="margin-bottom:12px;">解锁 <b>2000字完整逐题分析</b>，含专属行动指南。</div>';
+        html += '<button class="btn" onclick="alert(\'请发邮件到 wotule_nilongme@163.com\n\n邮件里备注你的报告编号：' + code + '\n\n我会在24小时内把逐题深度解读发给你。\n（9.9元，微信支付，发邮件后我会回复付款方式）\')">9.9元 · 解锁逐题深度解读</button>';
+        html += '</div>';
+
+        document.getElementById('report').innerHTML = html;
+    })
+    .catch(function() {
+        document.getElementById('report').innerHTML = '<h1>加载失败</h1><p>请检查网络后重试。<br>或发邮件到 wotule_nilongme@163.com 获取报告。</p>';
+    });
+})();
+</script>
+</body>
+</html>
