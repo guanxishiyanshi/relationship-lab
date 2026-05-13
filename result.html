@@ -20,7 +20,7 @@
         .btn-orange { background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; }
         .btn-pink { background:linear-gradient(135deg,#e05a8a,#c04a6a); color:#fff; }
         .btn-ghost { background:rgba(255,255,255,0.1); color:#fff; }
-        .btn-pay { background:linear-gradient(135deg,#ff6b35,#f0974a); color:#fff; font-size:18px; padding:18px; width:100%; border-radius:16px; box-shadow:0 8px 24px rgba(240,151,74,0.4); }
+        .btn-lock { background:linear-gradient(135deg,#f0974a,#e05a2a); color:#fff; font-size:18px; padding:18px; width:100%; border-radius:16px; box-shadow:0 8px 24px rgba(240,151,74,0.4); cursor:pointer; border:none; }
         .highlight { border:2px solid rgba(240,151,74,0.5); background:rgba(240,151,74,0.08); }
         .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; }
         .modal-box { background:#1a2a4a; border-radius:20px; padding:28px 24px; margin:16px; max-width:360px; text-align:center; border:1px solid rgba(255,255,255,0.1); }
@@ -59,12 +59,16 @@
     <!-- 直击内心的一道题 -->
     <div id="deepCard"></div>
 
-    <!-- 付费入口 -->
-    <div class="card" style="text-align:center; border:2px solid rgba(255,107,53,0.6); background:rgba(255,107,53,0.08);">
-        <div class="card-title" style="color:#ff6b35; font-size:18px;">🔓 为什么会这样？怎么改变？</div>
-        <div class="card-text" style="margin-bottom:12px;">解锁 <b>2000字完整深度报告</b>，看清你的情感出厂设置。</div>
-        <button class="btn-pay" id="payBtn">9.9元 · 解锁完整报告 →</button>
-        <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">微信扫码支付，24小时内发送报告</p>
+    <!-- 🔒 深度报告入口（带锁） -->
+    <div class="card" style="text-align:center; border:2px solid rgba(240,151,74,0.6); background:rgba(240,151,74,0.08);">
+        <div class="card-title" style="color:#f0974a; font-size:18px;">🔒 完整深度报告（逐题解读）</div>
+        <div class="card-text" style="margin-bottom:12px;">
+            包含 <b>22 道题逐题分析</b> + 专属关系建议
+        </div>
+        <button class="btn-lock" id="unlockDeepReportBtn">🔓 点击解锁深度报告 →</button>
+        <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:8px;">
+            解锁方式：微信支付 9.9 元后，联系 wotule_nilongme@163.com 获取解锁码
+        </p>
     </div>
 
     <!-- 创作者故事入口 -->
@@ -74,50 +78,54 @@
         <div class="card-text" style="color:rgba(255,255,255,0.5);">看看创作者的故事</div>
     </div>
 
-    <!-- 双人报告模块 -->
-    <div id="coupleModule" style="display:none;">
-        <div class="card highlight">
-            <div class="card-title" style="color:#f0974a;">🔗 你们的关系诊断</div>
-            <div class="card-text" id="coupleInfo"></div>
-            <div class="card-text" id="coupleGap" style="margin-top:8px;"></div>
-        </div>
-        <div style="text-align:center; margin-top:12px;">
-            <button class="btn-pay" onclick="window.open('https://你的问卷星双人链接','_blank')">🔓 解锁完整双人翻译指南</button>
-        </div>
-    </div>
-
     <!-- 底部按钮 -->
     <div class="btn-row">
-        <button class="btn btn-ghost" onclick="window.location.href='https://guanxishiyanshi.github.io/relationship-lab/test.html'">重新测试</button>
+        <button class="btn btn-ghost" onclick="window.location.href='test.html'">重新测试</button>
         <button class="btn btn-orange" id="saveBtn">保存结果</button>
         <button class="btn btn-pink" id="shareBtn">分享给她 →</button>
-        <button class="btn btn-ghost" id="reopenCoupleBtn" style="display:none;">查看双人报告</button>
     </div>
-</div>
-
-<!-- 右上角二维码 -->
-<div style="position:fixed; top:80px; right:16px; z-index:999; background:#fff; border-radius:12px; padding:10px; box-shadow:0 4px 16px rgba(0,0,0,0.3); text-align:center;">
-    <div id="qrcode" style="display:inline-block; width:80px; height:80px;"></div>
-    <p style="font-size:10px; color:#666; margin:4px 0 0;">扫码看深度报告</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
-// ========== 数据读取 ==========
 (function(){
+// ========== 全局变量 ==========
 var params = new URLSearchParams(window.location.search);
 var encoded = params.get('scores');
-if (!encoded) { try { var s=localStorage.getItem('relationship-lab-result'); if(s) encoded=btoa(JSON.parse(s).dim1+','+JSON.parse(s).dim2+','+JSON.parse(s).dim3); } catch(e){} }
-if (!encoded) { document.getElementById('report').innerHTML='<h1>未找到数据</h1><p>请从首页开始测试。</p><button class="btn btn-orange" onclick="window.location.href=\'index.html\'">开始测试</button>'; return; }
-var s=atob(encoded).split(',').map(Number);
-var scores={dim1:s[0],dim2:s[1],dim3:s[2]};
+var scores = {dim1:0, dim2:0, dim3:0};
+var personality = '';
+var currentReportCode = null;
+
+// ========== 数据读取 ==========
+if (!encoded) { 
+    try { 
+        var s = localStorage.getItem('relationship-lab-result'); 
+        if(s) {
+            var parsed = JSON.parse(s);
+            encoded = btoa(parsed.dim1 + ',' + parsed.dim2 + ',' + parsed.dim3);
+        }
+    } catch(e){ console.log(e); } 
+}
+if (!encoded) { 
+    document.getElementById('report').innerHTML='<h1>未找到数据</h1><p>请从首页开始测试。</p><button class="btn btn-orange" onclick="window.location.href=\'index.html\'">开始测试</button>'; 
+    return; 
+}
+var sArr = atob(encoded).split(',').map(Number);
+scores = {dim1:sArr[0], dim2:sArr[1], dim3:sArr[2]};
 
 // ========== 画像判断 ==========
-function level(v,t){ var h=t===1?28:28,m=t===1?17:17; if(v>=h)return'高'; if(v>=m)return'中'; return'低'; }
-var l1=level(scores.dim1,1),l2=level(scores.dim2,2),l3=level(scores.dim3,2);
-var map={
+function level(v,t){ 
+    var h = (t===1 ? 28 : 28);
+    var m = (t===1 ? 17 : 17); 
+    if(v>=h) return '高'; 
+    if(v>=m) return '中'; 
+    return '低'; 
+}
+var l1 = level(scores.dim1,1);
+var l2 = level(scores.dim2,2);
+var l3 = level(scores.dim3,2);
+var map = {
     '高-高-高':'全面冻结型','高-高-中':'全面冻结型','高-中-高':'全面冻结型','中-高-高':'全面冻结型',
     '高-高-低':'孤独的付出者','高-中-低':'孤独的付出者','中-高-低':'孤独的付出者',
     '高-低-高':'孤独的阅读者','高-低-中':'孤独的阅读者','高-低-低':'孤独的阅读者',
@@ -126,10 +134,10 @@ var map={
     '低-低-中':'双向通达型','低-低-低':'双向通达型',
     '中-中-中':'矛盾探索者','中-中-高':'矛盾探索者','中-中-低':'矛盾探索者','中-高-中':'矛盾探索者','中-低-中':'矛盾探索者','高-中-中':'矛盾探索者','低-中-中':'矛盾探索者'
 };
-var personality=map[l1+'-'+l2+'-'+l3]||'矛盾探索者';
+personality = map[l1+'-'+l2+'-'+l3] || '矛盾探索者';
 
 // ========== 文案 ==========
-var texts={
+var texts = {
     '全面冻结型':{sub:'你习惯了一个人扛下所有，却在情感世界里活成了一座孤岛。',d1:'得分 '+scores.dim1+'/40 · 情感隔离',d1d:'情绪对你来说是需要被处理掉的麻烦。你从小学会了用做事来逃避感受。',d2:'得分 '+scores.dim2+'/35 · 信号接收困难',d2d:'你习惯用"解决问题"来表达关心，但伴侣要的只是一句"我懂你"。',d3:'得分 '+scores.dim3+'/35 · 任务驱动',d3d:'婚姻对你更像人生必答题。你清楚责任，但真的快乐吗？'},
     '孤独的付出者':{sub:'你用尽全力去爱，却苦于对方感受不到。',d1:'得分 '+scores.dim1+'/40 · 情感隔离',d1d:'你不擅长识别自己的情绪，也不太会安抚自己。',d2:'得分 '+scores.dim2+'/35 · 信号接收困难',d2d:'你给出的关心常常包裹在分析和建议里。',d3:'得分 '+scores.dim3+'/35 · 内在驱动',d3d:'你内心有强烈的爱的渴望，你想成为一个好丈夫、好父亲。'},
     '孤独的阅读者':{sub:'你能精准感知她的情绪，却把自己的心封锁起来。',d1:'得分 '+scores.dim1+'/40 · 情感隔离',d1d:'你与自己的内心断联，习惯性压抑情绪。',d2:'得分 '+scores.dim2+'/35 · 共情能力在线',d2d:'你能敏锐察觉她的情绪，这是你的天赋。',d3:'得分 '+scores.dim3+'/35 · 任务驱动',d3d:'关系对你更像一项需要完成的"任务"。'},
@@ -138,160 +146,181 @@ var texts={
     '双向通达型':{sub:'你既懂自己，也懂别人。这是最健康的状态。',d1:'得分 '+scores.dim1+'/40 · 自我觉察',d1d:'你保留了与自己内心的连接。',d2:'得分 '+scores.dim2+'/35 · 共情能力在线',d2d:'你能识别并回应伴侣的情绪信号。',d3:'得分 '+scores.dim3+'/35 · 内在驱动',d3d:'你的心是自己点燃的，不是别人推着走的。'},
     '矛盾探索者':{sub:'你不是不想，是不知道该怎么办。你正在努力的途中。',d1:'得分 '+scores.dim1+'/40 · 沉默挣扎',d1d:'你偶尔能察觉到不对劲，但不知如何是好。',d2:'得分 '+scores.dim2+'/35 · 努力但笨拙',d2d:'你开始意识到她的情绪需要被处理，但工具有限。',d3:'得分 '+scores.dim3+'/35 · 矛盾犹豫',d3d:'你内心有渴望，但常被现实和责任淹没。'}
 };
-var t=texts[personality];
+var t = texts[personality] || texts['矛盾探索者'];
 
 // ========== 渲染页面 ==========
-document.getElementById('tag').textContent=personality;
-document.getElementById('title').textContent='你是：'+personality;
-document.getElementById('subtitle').textContent=t.sub;
-document.getElementById('dim1Text').innerHTML='<b>'+t.d1+'</b><br>'+t.d1d;
-document.getElementById('dim2Text').innerHTML='<b>'+t.d2+'</b><br>'+t.d2d;
-document.getElementById('dim3Text').innerHTML='<b>'+t.d3+'</b><br>'+t.d3d;
+document.getElementById('tag').textContent = personality;
+document.getElementById('title').textContent = '你是：'+personality;
+document.getElementById('subtitle').textContent = t.sub;
+document.getElementById('dim1Text').innerHTML = '<b>'+t.d1+'</b><br>'+t.d1d;
+document.getElementById('dim2Text').innerHTML = '<b>'+t.d2+'</b><br>'+t.d2d;
+document.getElementById('dim3Text').innerHTML = '<b>'+t.d3+'</b><br>'+t.d3d;
 
 // 核心发现
-var maxDim=Math.max(scores.dim1/40,scores.dim2/35,scores.dim3/35);
-var minDim=Math.min(scores.dim1/40,scores.dim2/35,scores.dim3/35);
-var coreText='';
-if(scores.dim2/35===maxDim&&l2==='高') coreText='你最大的困局在"共情回应"。你很努力，但关心常被误译。';
-else if(scores.dim1/40===maxDim&&l1==='高') coreText='你最大的困局在"自我情绪"。你习惯了压抑，那些感受并没有消失。';
-else if(scores.dim3/35===maxDim&&l3==='高') coreText='你最大的困局在"爱的动力"。你能扛起责任，但找不到自己的渴望。';
-else coreText='你的困局不太极端，但这恰恰是最难描述的状态——什么都有一点，什么都不确定。';
-if(scores.dim2/35===minDim&&l2==='低') coreText+='<br><br>但你的共情能力不错，这是很宝贵的资产。';
-else if(scores.dim1/40===minDim&&l1==='低') coreText+='<br><br>但你对自己情绪的觉察还不错，这是很多人缺失的能力。';
-else if(scores.dim3/35===minDim&&l3==='低') coreText+='<br><br>但你的爱的动力来自内心，这很难得。';
-else coreText+='<br><br>你已经意识到了问题，愿意面对自己——这就是最大的优势。';
-document.getElementById('core').innerHTML=coreText;
+var maxDim = Math.max(scores.dim1/40, scores.dim2/35, scores.dim3/35);
+var minDim = Math.min(scores.dim1/40, scores.dim2/35, scores.dim3/35);
+var coreText = '';
+if(scores.dim2/35===maxDim && l2==='高') coreText = '你最大的困局在"共情回应"。你很努力，但关心常被误译。';
+else if(scores.dim1/40===maxDim && l1==='高') coreText = '你最大的困局在"自我情绪"。你习惯了压抑，那些感受并没有消失。';
+else if(scores.dim3/35===maxDim && l3==='高') coreText = '你最大的困局在"爱的动力"。你能扛起责任，但找不到自己的渴望。';
+else coreText = '你的困局不太极端，但这恰恰是最难描述的状态——什么都有一点，什么都不确定。';
+if(scores.dim2/35===minDim && l2==='低') coreText += '<br><br>但你的共情能力不错，这是很宝贵的资产。';
+else if(scores.dim1/40===minDim && l1==='低') coreText += '<br><br>但你对自己情绪的觉察还不错，这是很多人缺失的能力。';
+else if(scores.dim3/35===minDim && l3==='低') coreText += '<br><br>但你的爱的动力来自内心，这很难得。';
+else coreText += '<br><br>你已经意识到了问题，愿意面对自己——这就是最大的优势。';
+document.getElementById('core').innerHTML = coreText;
 
 // ========== 雷达图 ==========
-var chart=echarts.init(document.getElementById('radarChart'));
+var chart = echarts.init(document.getElementById('radarChart'));
 chart.setOption({
     radar:{center:['50%','50%'],radius:'70%',indicator:[{name:'自我情绪',max:40},{name:'共情回应',max:40},{name:'爱的动力',max:40}],axisName:{color:'rgba(255,255,255,0.7)',fontSize:13},splitArea:{areaStyle:{color:['rgba(240,151,74,0.05)','rgba(240,151,74,0.1)']}},splitLine:{lineStyle:{color:'rgba(255,255,255,0.15)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,0.2)'}}},
     series:[{type:'radar',data:[{value:[scores.dim1,Math.round(scores.dim2*(40/35)),Math.round(scores.dim3*(40/35))],name:'你'}],areaStyle:{color:'rgba(240,151,74,0.3)'},lineStyle:{color:'#f0974a',width:2},itemStyle:{color:'#f0974a'},symbol:'circle',symbolSize:6}]
 });
-window.addEventListener('resize',function(){chart.resize();});
+window.addEventListener('resize', function(){ chart.resize(); });
 
 // ========== 直击内心的一道题 ==========
 (function(){
     try {
-        var ua=JSON.parse(localStorage.getItem('relationship-lab-progress')).answers;
-        var qs=[
+        var ua = JSON.parse(localStorage.getItem('relationship-lab-progress')).answers;
+        var qs = [
             {idx:4,t:'🧠 吵完架，你多久才懂自己怎么了',h:'你的感觉总是迟到。吵完架的当下你心里堵着，但说不清堵的是什么。等你想明白的时候，她已经等累了。这就是你们之间的时差。',m:'你偶尔能感觉到自己的情绪，偶尔不能。像一台时好时坏的收音机，收到的信号断断续续。',l:'你在冲突中对自己情绪的读取速度还不错。这份能力让你不至于总是缺席自己的感受。'},
             {idx:6,t:'💬 你对自己说话的方式',h:'你对别人温柔，对自己刻薄。犯错时对自己说"你怎么又搞砸了"，这些话你绝不会对朋友说，但对自己，你能说一整天。',m:'你偶尔能意识到自己对自己太狠了，但压力一来，那个苛责的声音又会回来。',l:'你对自己有基本的善意。内心那个声音说的是"没事，下次注意"。'},
             {idx:7,t:'🔇 被她质问时，你说得出来吗',h:'"你到底在想什么？"——这句话像一盆冷水。脑子瞬间空了。不是没有想法，是它们全部堵在门口，谁也出不去。',m:'平静的时候你能说，一旦变成质问，你的通道就收窄了。你不是不想说，是不知道怎么在这个温度下说。',l:'在压力下你还能保持表达。你知道怎么在风暴里保持连接。'},
             {idx:10,t:'🔧 你在帮她修问题，还是陪她坐着',h:'你表达关心的方式是抄起工具箱。她一说烦，你就开始分析、给方案。你觉得自己在处理问题，但她只是想要你坐着陪她一会儿。你一直在修一扇她没让你修的门。',m:'你有时候能倾听，有时候不自觉地开始解决问题。新旧模式还在交替。',l:'你不太会把"给建议"等同于"处理完了"。你知道什么时候该出手，什么时候只是陪着。'},
             {idx:20,t:'❤️ 你爱一个人，是真心还是怕孤单',h:'夜深人静时，一个人老去的画面会让你心慌。你想要一段感情，部分是因为害怕孤独。这不丢人。但怕孤独不能当感情的地基。',m:'你内心有两个声音：一个怕老了没人陪，一个说还是要找真心喜欢的。你已经看到了——你不只是被恐惧推着走。',l:'你想要一段关系，更多是因为你想爱，不是因为怕孤独。这份动力是纯粹的。'}
         ];
-        qs.sort(function(a,b){return ua[b.idx]-ua[a.idx];});
-        var top=qs[0],sc=ua[top.idx],ans=sc>=4?top.h:sc>=2?top.m:top.l;
-        var html='<div class="card highlight"><div class="card-title" style="color:#f0974a;font-size:18px;">🎯 直击你内心的一道题</div>';
-        html+='<div class="card-text" style="font-size:15px;line-height:1.7;"><b>'+top.t+'</b><br><br>'+ans;
-        if(sc>=4) html+='<br><br><b style="color:#f0974a;">为什么会这样？怎么改？答案在完整报告里。</b>';
-        html+='</div></div>';
-        document.getElementById('deepCard').innerHTML=html;
-    } catch(e) { document.getElementById('deepCard').innerHTML=''; }
+        qs.sort(function(a,b){ return ua[b.idx] - ua[a.idx]; });
+        var top = qs[0];
+        var sc = ua[top.idx];
+        var ans = sc>=4 ? top.h : (sc>=2 ? top.m : top.l);
+        var html = '<div class="card highlight"><div class="card-title" style="color:#f0974a;font-size:18px;">🎯 直击你内心的一道题</div>';
+        html += '<div class="card-text" style="font-size:15px;line-height:1.7;"><b>'+top.t+'</b><br><br>'+ans;
+        if(sc>=4) html += '<br><br><b style="color:#f0974a;">为什么会这样？怎么改？答案在完整报告里。</b>';
+        html += '</div></div>';
+        document.getElementById('deepCard').innerHTML = html;
+    } catch(e) { 
+        document.getElementById('deepCard').innerHTML = ''; 
+    }
 })();
 
-// ========== 保存答案到 Supabase ==========
+// ========== 生成报告编号 ==========
+try {
+    var savedResult = localStorage.getItem('relationship-lab-result');
+    if (savedResult) {
+        var storedCode = localStorage.getItem('relationship-lab-report-code');
+        if (storedCode) {
+            currentReportCode = JSON.parse(storedCode).code;
+        } else {
+            currentReportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+            localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: currentReportCode, timestamp: Date.now()}));
+        }
+    }
+} catch(e) { console.log(e); }
+
+// ========== 解锁深度报告（关键修复：确保按钮能点击）==========
+// 使用 window.onload 或延迟绑定确保 DOM 已加载
+window.addEventListener('DOMContentLoaded', function() {
+    var unlockBtn = document.getElementById('unlockDeepReportBtn');
+    if (unlockBtn) {
+        unlockBtn.onclick = function() {
+            // 🔑 预设解锁码（付费后告诉用户这个数字）
+            var UNLOCK_CODE = '2025';  // ⚠️ 你可以改成任意数字/字符串
+            
+            var inputCode = prompt('🔒 请输入解锁码（付费后获得）\n\n解锁码获取方式：微信支付 9.9 元后，联系 wotule_nilongme@163.com 获取');
+            
+            if (inputCode === UNLOCK_CODE) {
+                // 获取或生成报告编号
+                var reportCode = currentReportCode;
+                if (!reportCode) {
+                    reportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+                    try {
+                        localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: reportCode, timestamp: Date.now()}));
+                    } catch(e) {}
+                }
+                // 跳转到深度报告页面
+                window.location.href = 'deep-report.html?code=' + reportCode + '&unlock=paid';
+            } else if (inputCode !== null && inputCode !== '') {
+                alert('❌ 解锁码错误\n\n请确认后重新输入，或联系 wotule_nilongme@163.com 获取正确解锁码');
+            }
+        };
+    } else {
+        console.log('未找到 unlockDeepReportBtn 按钮');
+    }
+});
+
+// ========== 保存数据到 Supabase ==========
 var SUPABASE_URL = 'https://ptadbowmnbytfwoisrup.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_VTrW3OmOe2al2vxfs85QGA_Tc_G3wDI';
-var reportCode = 'REL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+var reportCodeForSave = currentReportCode || ('REL-' + Math.random().toString(36).substring(2, 6).toUpperCase());
 
 (function saveToSupabase(){
-    var savedProgress = JSON.parse(localStorage.getItem('relationship-lab-progress'));
-    var answersArray = savedProgress ? savedProgress.answers : [];
-    fetch(SUPABASE_URL + '/rest/v1/answers', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-            code: reportCode,
-            personality: personality,
-            dim1: scores.dim1,
-            dim2: scores.dim2,
-            dim3: scores.dim3,
-            answers_json: answersArray
-        })
-    });
+    try {
+        var savedProgress = localStorage.getItem('relationship-lab-progress');
+        var answersArray = savedProgress ? JSON.parse(savedProgress).answers : [];
+        fetch(SUPABASE_URL + '/rest/v1/answers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+                code: reportCodeForSave,
+                personality: personality,
+                dim1: scores.dim1,
+                dim2: scores.dim2,
+                dim3: scores.dim3,
+                dim4: 0,
+                answers_json: answersArray
+            })
+        }).catch(function(e){ console.log('保存失败', e); });
+        
+        if (!localStorage.getItem('relationship-lab-report-code')) {
+            localStorage.setItem('relationship-lab-report-code', JSON.stringify({code: reportCodeForSave, timestamp: Date.now()}));
+            currentReportCode = reportCodeForSave;
+        }
+    } catch(e) { console.log(e); }
 })();
 
-var shareData=encodeURIComponent(personality)+'|'+scores.dim1+'|'+scores.dim2+'|'+scores.dim3;
-var shareEncoded=btoa(unescape(encodeURIComponent(shareData)));
-var shareUrl='https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner='+shareEncoded;
-var qrUrl = 'https://guanxishiyanshi.github.io/relationship-lab/deep-report.html?code=' + reportCode;
-new QRCode(document.getElementById("qrcode"),{text:qrUrl,width:80,height:80,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});
-
-// ========== 按钮事件 ==========
-document.getElementById('saveBtn').onclick=function(){
-    var btn=this;btn.textContent='生成中...';btn.disabled=true;
-    html2canvas(document.getElementById('report'),{backgroundColor:'#0a1628',scale:2,useCORS:true}).then(function(c){
-        var a=document.createElement('a');a.download='情感出厂设置.png';a.href=c.toDataURL('image/png');a.click();
-        btn.textContent='保存结果';btn.disabled=false;
-    }).catch(function(){btn.textContent='失败，重试';btn.disabled=false;});
+// ========== 保存结果图片 ==========
+document.getElementById('saveBtn').onclick = function(){
+    var btn = this;
+    btn.textContent = '生成中...';
+    btn.disabled = true;
+    html2canvas(document.getElementById('report'), {backgroundColor:'#0a1628', scale:2, useCORS:true}).then(function(c){
+        var a = document.createElement('a');
+        a.download = '情感出厂设置.png';
+        a.href = c.toDataURL('image/png');
+        a.click();
+        btn.textContent = '保存结果';
+        btn.disabled = false;
+    }).catch(function(){
+        btn.textContent = '失败，重试';
+        btn.disabled = false;
+    });
 };
 
-document.getElementById('shareBtn').onclick=function(){
+// ========== 分享链接（双人报告） ==========
+var shareData = encodeURIComponent(personality) + '|' + scores.dim1 + '|' + scores.dim2 + '|' + scores.dim3;
+var shareEncoded = btoa(encodeURIComponent(shareData));
+var shareUrl = 'https://guanxishiyanshi.github.io/relationship-lab/partner-test.html?partner=' + shareEncoded;
+
+document.getElementById('shareBtn').onclick = function(){
     navigator.clipboard.writeText(shareUrl).then(function(){
-        var btn=document.getElementById('shareBtn');
-        btn.textContent='✅ 已复制，去粘贴';
-        btn.style.opacity='1';
-        setTimeout(function(){btn.style.transition='opacity 0.8s';btn.style.opacity='0.5';setTimeout(function(){btn.textContent='分享给她 →';btn.style.opacity='1';},800);},1500);
-    }).catch(function(){prompt('复制这个链接发给她：',shareUrl);});
-};
-
-// ========== 双人报告 ==========
-function getPartner(){
-    var p=params.get('partner');
-    if(!p){ try{ var s=localStorage.getItem('couple-partner-data'); if(s){ var d=JSON.parse(s); if(d.personality) return d; } } catch(e){} return null; }
-    try{ var d=decodeURIComponent(escape(atob(p))).split('|'); return {personality:decodeURIComponent(d[0]),dim1:parseInt(d[1]),dim2:parseInt(d[2]),dim3:parseInt(d[3]),dim4:parseInt(d[4])}; } catch(e){ return null; }
-}
-var partner=getPartner();
-if(partner){
-    function showCouple(){
-        localStorage.setItem('couple-partner-data',JSON.stringify(partner));
-        document.getElementById('coupleModule').style.display='block';
-        document.getElementById('coupleInfo').innerHTML='<b>TA的画像：'+partner.personality+'</b><br>TA的得分：沉默解读 '+partner.dim1+'/50 · 需求表达 '+partner.dim2+'/50 · 爱意感知 '+partner.dim3+'/50 · 冲突修复 '+partner.dim4+'/50';
-        var gaps=[{d:'沉默解读',a:Math.round(scores.dim1*(50/40)),b:partner.dim1,gap:Math.abs(Math.round(scores.dim1*(50/40))-partner.dim1),s:'他沉默了'},{d:'需求表达',a:Math.round(scores.dim2*(50/35)),b:partner.dim2,gap:Math.abs(Math.round(scores.dim2*(50/35))-partner.dim2),s:'她需要安慰'},{d:'爱意通道',a:Math.round(scores.dim3*(50/35)),b:partner.dim3,gap:Math.abs(Math.round(scores.dim3*(50/35))-partner.dim3),s:'他用行动表达爱'}];
-        gaps.sort(function(a,b){return b.gap-a.gap;});
-        var g=gaps[0];
-        var st={ '他沉默了':'你们最大的信号断层在"他沉默时"——你沉默是因为说不出来，她沉默是因为在等你开口。两个人都安静，却在不同的频道上。',
-                  '她需要安慰':'你们最大的信号断层在"她需要安慰时"——你想帮她解决问题，她只想让你听她说。你拿错了工具，她收错了东西。',
-                  '爱意通道':'你们最大的信号断层在"爱意表达方式"上——你用行动说爱，她用言语感知爱。你搬了十块砖，只有一块落在她接收范围内。' };
-        document.getElementById('coupleGap').innerHTML='<b>🔴 '+g.s+'</b><br>'+st[g.s];
-    }
-    var overlay=document.createElement('div');overlay.className='modal-overlay';
-    overlay.innerHTML='<div class="modal-box"><div class="modal-icon">🔗</div><div class="modal-title">检测到TA的测评数据</div><div class="modal-desc">TA的画像是 <b>'+partner.personality+'</b><br><br>是否查看你们的<b>关系信号断层报告</b>？</div><div class="modal-btns"><button class="modal-btn btn-orange" id="viewCouple">查看报告</button><button class="modal-btn btn-ghost" id="skipCouple">先看自己的</button><button class="modal-btn btn-ghost" id="closeCouple">关闭</button></div></div>';
-    document.body.appendChild(overlay);
-    document.getElementById('viewCouple').onclick=function(){showCouple();overlay.remove();document.getElementById('reopenCoupleBtn').style.display='block';};
-    document.getElementById('skipCouple').onclick=function(){overlay.remove();document.getElementById('reopenCoupleBtn').style.display='block';};
-    document.getElementById('closeCouple').onclick=function(){overlay.remove();document.getElementById('reopenCoupleBtn').style.display='block';};
-    document.getElementById('reopenCoupleBtn').onclick=function(){showCouple();document.getElementById('coupleModule').scrollIntoView({behavior:'smooth'});};
-}
-// ========== 付费弹窗 ==========
-    document.getElementById('payBtn').onclick=function(){
-    var overlay=document.createElement('div');overlay.className='modal-overlay';
-    overlay.innerHTML='<div class="modal-box" style="text-align:center;">'+
-        '<div class="modal-title" style="font-size:18px;">📱 微信扫码支付 9.9元</div>'+
-        '<img src="pay-qrcode.png" style="width:200px; height:200px; margin:16px auto; display:block; border-radius:12px;">'+
-        '<div class="modal-desc" style="text-align:left; line-height:1.8; font-size:13px;">'+
-        '<p>支付完成后，请发邮件到：<br><b style="color:#f0974a; font-size:15px;">wotule_nilongme@163.com</b></p>'+
-        '<p>邮件里告诉我：<br>① 你的画像标签<br>② 微信昵称（方便核对付款）</p>'+
-        '<p style="color:rgba(255,255,255,0.5);">我会在 <b style="color:#fff;">24小时内</b> 把完整深度报告发到你的邮箱。</p>'+
-        '</div>'+
-        '<div class="modal-btns" style="margin-top:12px;"><button class="modal-btn btn-ghost" id="closePay">关闭</button></div>'+
-        '</div>';
-    document.body.appendChild(overlay);
-    document.getElementById('closePay').onclick=function(){overlay.remove();};
-    overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+        var btn = document.getElementById('shareBtn');
+        btn.textContent = '✅ 已复制，去粘贴';
+        setTimeout(function(){ btn.textContent = '分享给她 →'; }, 2000);
+    }).catch(function(){
+        prompt('复制这个链接发给她：', shareUrl);
+    });
 };
 
 // ========== 关于这份量表 ==========
-document.getElementById('aboutCard').onclick=function(){
-    var overlay=document.createElement('div');overlay.className='modal-overlay';
-    overlay.innerHTML='<div class="modal-box" style="text-align:left; max-height:80vh; overflow-y:auto; max-width:380px;">'+
+document.getElementById('aboutCard').onclick = function(){
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = '<div class="modal-box" style="text-align:left; max-height:80vh; overflow-y:auto; max-width:380px;">'+
         '<div class="modal-icon">✉️</div>'+
         '<div class="modal-title">关于这份量表</div>'+
         '<div class="modal-desc" style="line-height:1.9; font-size:14px;">'+
@@ -315,8 +344,8 @@ document.getElementById('aboutCard').onclick=function(){
         '<div class="modal-btns" style="margin-top:16px;"><button class="modal-btn btn-ghost" id="closeAbout">关闭</button></div>'+
         '</div>';
     document.body.appendChild(overlay);
-    document.getElementById('closeAbout').onclick=function(){overlay.remove();};
-    overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+    document.getElementById('closeAbout').onclick = function(){ overlay.remove(); };
+    overlay.onclick = function(e){ if(e.target === overlay) overlay.remove(); };
 };
 
 })();
